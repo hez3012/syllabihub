@@ -14,6 +14,8 @@
         <button type="submit">Log out</button>
     </form>
 
+    <p><a href="{{ route('faculty-assignments.index') }}">Manage faculty subject assignments</a></p>
+
     <h2>Tracker</h2>
     <ul>
         <li>Total subjects: {{ $totalSubjects }}</li>

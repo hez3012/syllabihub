@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FacultyAssignmentController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\SyllabusController;
@@ -75,6 +76,14 @@ Route::middleware(['auth', 'role:faculty'])->group(function () {
 
 Route::middleware(['auth', 'role:admin,intern'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'admin'])->name('dashboard.admin');
+
+    // Faculty-subject assignment — writes to the existing faculty_subjects
+    // pivot. Scoped to assignment only; creating/editing user accounts is
+    // "future" per CLAUDE.md §7, not built here.
+    Route::get('/admin/faculty', [FacultyAssignmentController::class, 'index'])->name('faculty-assignments.index');
+    Route::get('/admin/faculty/{faculty}', [FacultyAssignmentController::class, 'show'])->name('faculty-assignments.show');
+    Route::post('/admin/faculty/{faculty}/subjects', [FacultyAssignmentController::class, 'store'])->name('faculty-assignments.store');
+    Route::delete('/admin/faculty/{faculty}/subjects/{subject}', [FacultyAssignmentController::class, 'destroy'])->name('faculty-assignments.destroy');
 });
 
 /*

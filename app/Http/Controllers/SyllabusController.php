@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use App\Models\Syllabus;
+use App\Services\SyllabusTextExtractor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,18 +21,19 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * visitor can view/download), it's upload that's gated behind auth+role
  * in routes/web.php.
  *
- * NOT implemented here (out of scope for "upload/download logic"):
- * text extraction into syllabi.raw_text. That needs a PDF/DOCX parser
- * library (e.g. smalot/pdfparser, phpoffice/phpword) which hasn't been
- * discussed/approved yet. Every upload is created with status='pending'
- * and raw_text=null — the syllabus-content half of SearchController's
- * fuzzy search has nothing to match against until that's built. Flagging
- * this explicitly so it isn't mistaken for "search is broken."
+ * Text extraction (raw_text, for SearchController's syllabus-content
+ * search) runs synchronously right after the file is stored — see
+ * SyllabusTextExtractor. No queue worker involved; status flips straight
+ * to 'processed' or 'failed'.
  */
 class SyllabusController extends Controller
 {
     private const ALLOWED_EXTENSIONS = ['pdf', 'docx'];
     private const MAX_FILE_KILOBYTES = 20480; // 20MB
+
+    public function __construct(private readonly SyllabusTextExtractor $extractor)
+    {
+    }
 
     public function create(Subject $subject): View
     {
@@ -55,19 +57,27 @@ class SyllabusController extends Controller
         $fileType = $extension === 'pdf' ? 'pdf' : 'docx';
 
         $storedPath = $file->store("syllabi/{$subject->id}", 'local');
+        $absolutePath = Storage::disk('local')->path($storedPath);
+
+        $rawText = $this->extractor->extract($absolutePath, $fileType);
 
         $syllabus = Syllabus::create([
             'subject_id' => $subject->id,
             'file_path' => $storedPath,
             'file_type' => $fileType,
+            'raw_text' => $rawText,
             'curriculum_year' => $validated['curriculum_year'] ?? null,
-            'status' => 'pending',
+            'status' => $rawText !== null ? 'processed' : 'failed',
             'uploaded_by' => $request->user()->id,
         ]);
 
+        $statusNote = $rawText !== null
+            ? 'Status: processed — na-extract ang text para sa search.'
+            : 'Status: failed — hindi na-extract ang text (baka corrupted o scanned/image-only ang file). Nakasave pa rin ang file, puwede pa ring i-download.';
+
         return redirect()
             ->route('subjects.show', $subject)
-            ->with('status', "Na-upload ang syllabus (#{$syllabus->id}). Status: pending.");
+            ->with('status', "Na-upload ang syllabus (#{$syllabus->id}). {$statusNote}");
     }
 
     public function download(Syllabus $syllabus): StreamedResponse

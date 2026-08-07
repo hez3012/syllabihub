@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Project uses Bootstrap 5.3, not Tailwind — keep pagination()
+        // links() output consistent instead of Laravel's Tailwind default.
+        Paginator::useBootstrapFive();
     }
 }

@@ -11,7 +11,7 @@ class Subject extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'program_id', 'subject_code', 'title',
+        'program_id', 'created_by', 'subject_code', 'title',
         'year_level', 'semester',
         'prerequisite', 'corequisite',
         'lecture_hours', 'lab_hours',
@@ -33,8 +33,20 @@ class Subject extends Model
         return $this->hasOne(Syllabus::class)->latestOfMany();
     }
 
-    public function facultyMembers()
+    /** Who created this subject. Null = seeded/legacy — no faculty owner. */
+    public function creator()
     {
-        return $this->belongsToMany(User::class, 'faculty_subjects');
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function changeRequests()
+    {
+        return $this->hasMany(SubjectChangeRequest::class);
+    }
+
+    /** Whether this subject has a not-yet-decided edit/delete request. */
+    public function hasPendingChangeRequest(): bool
+    {
+        return $this->changeRequests()->where('status', 'pending')->exists();
     }
 }

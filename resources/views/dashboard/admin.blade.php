@@ -1,30 +1,44 @@
-{{-- Backend test stub — NOT final UI. Frontend team owns the real design. --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard stub — SyllabiHub</title>
-</head>
-<body>
-    <h1>Admin/Intern Dashboard (test stub)</h1>
-    <p>Logged in as: {{ auth()->user()->name }} ({{ auth()->user()->email }}, role: {{ auth()->user()->role }})</p>
+@extends('layouts.app')
 
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">Log out</button>
-    </form>
+@section('title', 'Admin Dashboard — SyllabiHub')
 
-    <p><a href="{{ route('faculty-assignments.index') }}">Manage faculty subject assignments</a></p>
+@section('content')
+    <h1 class="h3 mb-4">Admin/Intern Dashboard</h1>
 
-    <h2>Tracker</h2>
-    <ul>
-        <li>Total subjects: {{ $totalSubjects }}</li>
-        <li>With syllabus: {{ $withSyllabus }}</li>
-        <li>Missing: {{ $missing }}</li>
-    </ul>
+    <p>
+        <a href="{{ route('faculty-accounts.index') }}" class="btn btn-outline-primary btn-sm">Manage Faculty Accounts</a>
+        <a href="{{ route('subject-requests.index') }}" class="btn btn-outline-warning btn-sm">
+            Subject Change Requests
+            @if ($pendingRequestCount > 0)
+                <span class="badge bg-danger">{{ $pendingRequestCount }}</span>
+            @endif
+        </a>
+    </p>
 
-    <h2>Recent uploads</h2>
-    <table border="1" cellpadding="4">
+    <h2 class="h5 mt-4">Tracker</h2>
+    <div class="row mb-4" style="max-width: 40rem;">
+        <div class="col">
+            <div class="border rounded p-3 text-center">
+                <div class="fs-4">{{ $totalSubjects }}</div>
+                <div class="text-muted small">Total subjects</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="border rounded p-3 text-center">
+                <div class="fs-4">{{ $withSyllabus }}</div>
+                <div class="text-muted small">With syllabus</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="border rounded p-3 text-center">
+                <div class="fs-4">{{ $missing }}</div>
+                <div class="text-muted small">Missing</div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h5">Recent uploads</h2>
+    <table class="table table-striped table-bordered align-middle">
         <thead>
             <tr>
                 <th>Subject</th>
@@ -42,9 +56,8 @@
                     <td>{{ $syllabus->created_at?->format('Y-m-d H:i') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="4">Wala pang uploads.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">Wala pang uploads.</td></tr>
             @endforelse
         </tbody>
     </table>
-</body>
-</html>
+@endsection

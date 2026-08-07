@@ -22,14 +22,20 @@ class User extends Authenticatable
         ];
     }
 
-    public function subjects()
+    /** Subjects this user created (admin/intern act freely; faculty own only what they made). */
+    public function createdSubjects()
     {
-        return $this->belongsToMany(Subject::class, 'faculty_subjects');
+        return $this->hasMany(Subject::class, 'created_by');
     }
 
     public function uploadedSyllabi()
     {
         return $this->hasMany(Syllabus::class, 'uploaded_by');
+    }
+
+    public function subjectChangeRequests()
+    {
+        return $this->hasMany(SubjectChangeRequest::class, 'requested_by');
     }
 
     public function isAdmin(): bool

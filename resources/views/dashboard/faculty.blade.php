@@ -1,20 +1,25 @@
-{{-- Backend test stub — NOT final UI. Frontend team owns the real design. --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Faculty Dashboard stub — SyllabiHub</title>
-</head>
-<body>
-    <h1>My Subjects (test stub)</h1>
-    <p>Logged in as: {{ auth()->user()->name }} ({{ auth()->user()->email }})</p>
+@extends('layouts.app')
 
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">Log out</button>
-    </form>
+@section('title', 'Faculty Dashboard — SyllabiHub')
 
-    <table border="1" cellpadding="4">
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">My Subjects</h1>
+        <a href="{{ route('subjects.create') }}" class="btn btn-primary btn-sm">+ Add Subject</a>
+    </div>
+
+    @if ($pendingRequests->isNotEmpty())
+        <h2 class="h6">My pending requests</h2>
+        <ul class="list-group mb-4">
+            @foreach ($pendingRequests as $req)
+                <li class="list-group-item">
+                    {{ ucfirst($req->action) }} — {{ $req->subject->subject_code }} — naghihintay ng admin approval
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <table class="table table-striped table-bordered align-middle">
         <thead>
             <tr>
                 <th>Code</th>
@@ -27,14 +32,13 @@
             @forelse ($subjects as $subject)
                 <tr>
                     <td>{{ $subject->subject_code }}</td>
-                    <td>{{ $subject->title }}</td>
+                    <td><a href="{{ route('subjects.show', $subject) }}">{{ $subject->title }}</a></td>
                     <td>{{ $subject->latestSyllabus->status ?? 'wala pa' }}</td>
-                    <td><a href="{{ route('syllabi.create', $subject) }}">Upload/Replace</a></td>
+                    <td><a href="{{ route('syllabi.create', $subject) }}" class="btn btn-sm btn-outline-primary">Upload/Replace</a></td>
                 </tr>
             @empty
-                <tr><td colspan="4">Walang subjects na naka-assign sa iyo.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">Wala ka pang nagagawang subject.</td></tr>
             @endforelse
         </tbody>
     </table>
-</body>
-</html>
+@endsection

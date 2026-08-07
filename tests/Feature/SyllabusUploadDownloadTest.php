@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\SyllabusController;
 use App\Models\Subject;
 use App\Models\Syllabus;
 use App\Models\User;
@@ -34,14 +35,15 @@ class SyllabusUploadDownloadTest extends TestCase
         $file = $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf');
 
         $response = $this->actingAs($faculty)->post("/subjects/{$subject->id}/syllabus", [
-            'file' => $file,
-            'curriculum_year' => '2025-2026',
+            'file_pdf' => $file,
+            'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
 
         $response->assertRedirect(route('subjects.show', $subject));
 
         $syllabus = Syllabus::where('subject_id', $subject->id)->firstOrFail();
         $this->assertSame('processed', $syllabus->status);
+        $this->assertSame('pdf', $syllabus->file_type);
         $this->assertStringContainsString('Fixture Subject', $syllabus->raw_text);
         Storage::disk('local')->assertExists($syllabus->file_path);
     }
@@ -59,13 +61,47 @@ class SyllabusUploadDownloadTest extends TestCase
         );
 
         $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
-            'file' => $file,
+            'file_docx' => $file,
         ]);
 
         $response->assertRedirect();
         $syllabus = Syllabus::where('subject_id', $subject->id)->firstOrFail();
         $this->assertSame('processed', $syllabus->status);
+        $this->assertSame('docx', $syllabus->file_type);
         $this->assertStringContainsString('Fixture Subject', $syllabus->raw_text);
+    }
+
+    public function test_uploading_both_pdf_and_docx_together_creates_two_syllabus_rows(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $subject = Subject::factory()->create();
+
+        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+            'file_pdf' => $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf'),
+            'file_docx' => $this->realUploadedFile(
+                'sample-syllabus.docx',
+                'sample-syllabus.docx',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ),
+        ]);
+
+        $response->assertRedirect();
+        $this->assertSame(2, Syllabus::where('subject_id', $subject->id)->count());
+        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->count());
+        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'docx')->count());
+    }
+
+    public function test_upload_requires_at_least_one_file(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $subject = Subject::factory()->create();
+
+        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", []);
+
+        $response->assertSessionHasErrors('file_pdf');
+        $this->assertSame(0, Syllabus::where('subject_id', $subject->id)->count());
     }
 
     public function test_upload_rejects_a_disallowed_file_type(): void
@@ -77,10 +113,10 @@ class SyllabusUploadDownloadTest extends TestCase
         $file = UploadedFile::fake()->create('notes.txt', 10, 'text/plain');
 
         $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
-            'file' => $file,
+            'file_pdf' => $file,
         ]);
 
-        $response->assertSessionHasErrors('file');
+        $response->assertSessionHasErrors('file_pdf');
         $this->assertSame(0, Syllabus::where('subject_id', $subject->id)->count());
     }
 
@@ -95,7 +131,7 @@ class SyllabusUploadDownloadTest extends TestCase
         $file = $this->realUploadedFile('corrupted-syllabus.pdf', 'corrupted-syllabus.pdf', 'application/pdf');
 
         $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
-            'file' => $file,
+            'file_pdf' => $file,
         ]);
 
         $response->assertRedirect();
@@ -141,5 +177,37 @@ class SyllabusUploadDownloadTest extends TestCase
         $response = $this->get(route('syllabi.download', $syllabus));
 
         $response->assertNotFound();
+    }
+
+    public function test_preview_serves_pdf_inline(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('syllabi/test/preview.pdf', 'fake pdf bytes for preview test');
+
+        $syllabus = Syllabus::factory()->create([
+            'file_path' => 'syllabi/test/preview.pdf',
+            'file_type' => 'pdf',
+        ]);
+
+        $response = $this->get(route('syllabi.preview', $syllabus));
+
+        $response->assertOk();
+        $response->assertHeader('content-disposition');
+        $this->assertStringStartsWith('inline', $response->headers->get('content-disposition'));
+    }
+
+    public function test_preview_rejects_non_pdf(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('syllabi/test/preview.docx', 'fake docx bytes');
+
+        $syllabus = Syllabus::factory()->create([
+            'file_path' => 'syllabi/test/preview.docx',
+            'file_type' => 'docx',
+        ]);
+
+        $response = $this->get(route('syllabi.preview', $syllabus));
+
+        $response->assertStatus(415);
     }
 }

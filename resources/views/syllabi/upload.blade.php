@@ -1,30 +1,32 @@
-{{-- Backend test stub — NOT final UI. Frontend team owns the real design. --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Syllabus stub — SyllabiHub</title>
-</head>
-<body>
-    <h1>Upload syllabus for {{ $subject->subject_code }} — {{ $subject->title }} (test stub)</h1>
+@extends('layouts.app')
 
-    @if ($errors->any())
-        <ul style="color:red">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    @endif
+@section('title', 'Upload Syllabus — SyllabiHub')
 
-    <form method="POST" action="{{ route('syllabi.store', $subject) }}" enctype="multipart/form-data">
+@section('content')
+    <p><a href="{{ route('subjects.show', $subject) }}">&larr; Back to {{ $subject->subject_code }}</a></p>
+
+    <h1 class="h3 mb-2">Upload syllabus for {{ $subject->subject_code }} — {{ $subject->title }}</h1>
+    <p class="text-muted">Puwedeng isa lang o pareho — PDF at DOCX — basta may kahit isang file.</p>
+
+    <form method="POST" action="{{ route('syllabi.store', $subject) }}" enctype="multipart/form-data" class="col-md-6">
         @csrf
-        <div>
-            <label>File (PDF or DOCX, max 20MB): <input type="file" name="file" accept=".pdf,.docx" required></label>
+        <div class="mb-3">
+            <label class="form-label">PDF file (optional)</label>
+            <input type="file" name="file_pdf" class="form-control" accept=".pdf">
         </div>
-        <div>
-            <label>Curriculum year: <input type="text" name="curriculum_year" placeholder="e.g. 2025-2026"></label>
+        <div class="mb-3">
+            <label class="form-label">DOCX file (optional)</label>
+            <input type="file" name="file_docx" class="form-control" accept=".docx">
         </div>
-        <button type="submit">Upload</button>
+        <div class="mb-3">
+            <label class="form-label">Curriculum year</label>
+            <select name="curriculum_year" class="form-select">
+                <option value="">-- pumili --</option>
+                @foreach ($curriculumYears as $year)
+                    <option value="{{ $year }}">{{ $year }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
     </form>
-</body>
-</html>
+@endsection

@@ -1,36 +1,45 @@
-{{-- Backend test stub — NOT final UI. Frontend team owns the real design. --}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Browse Subjects stub — SyllabiHub</title>
-</head>
-<body>
-    <h1>Browse Subjects (test stub)</h1>
+@extends('layouts.app')
 
-    <form method="GET" action="{{ route('subjects.index') }}">
-        <label>Program:
-            <select name="program">
+@section('title', 'Browse Subjects — SyllabiHub')
+
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Browse Subjects</h1>
+        @auth
+            @if (auth()->user()->isAdmin() || auth()->user()->isFaculty() || auth()->user()->isIntern())
+                <a href="{{ route('subjects.create') }}" class="btn btn-primary btn-sm">+ Add Subject</a>
+            @endif
+        @endauth
+    </div>
+
+    <form method="GET" action="{{ route('subjects.index') }}" class="row g-2 align-items-end mb-4">
+        <div class="col-auto">
+            <label class="form-label">Program</label>
+            <select name="program" class="form-select">
                 <option value="">-- any --</option>
                 <option value="BSIT" @selected(($filters['program'] ?? null) === 'BSIT')>BSIT</option>
                 <option value="DIT" @selected(($filters['program'] ?? null) === 'DIT')>DIT</option>
             </select>
-        </label>
-        <label>Year level:
-            <input type="number" name="year_level" min="1" max="10" value="{{ $filters['year_level'] ?? '' }}">
-        </label>
-        <label>Semester:
-            <select name="semester">
+        </div>
+        <div class="col-auto">
+            <label class="form-label">Year level</label>
+            <input type="number" name="year_level" min="1" max="10" class="form-control" value="{{ $filters['year_level'] ?? '' }}">
+        </div>
+        <div class="col-auto">
+            <label class="form-label">Semester</label>
+            <select name="semester" class="form-select">
                 <option value="">-- any --</option>
                 <option value="1st" @selected(($filters['semester'] ?? null) === '1st')>1st</option>
                 <option value="2nd" @selected(($filters['semester'] ?? null) === '2nd')>2nd</option>
                 <option value="summer" @selected(($filters['semester'] ?? null) === 'summer')>summer</option>
             </select>
-        </label>
-        <button type="submit">Filter</button>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
     </form>
 
-    <table border="1" cellpadding="4">
+    <table class="table table-striped table-bordered align-middle">
         <thead>
             <tr>
                 <th>Code</th>
@@ -49,14 +58,19 @@
                     <td>{{ $subject->program?->code }}</td>
                     <td>{{ $subject->year_level }}</td>
                     <td>{{ $subject->semester }}</td>
-                    <td>{{ $subject->latestSyllabus ? 'Yes' : 'No' }}</td>
+                    <td>
+                        @if ($subject->latestSyllabus)
+                            <span class="badge bg-success">Yes</span>
+                        @else
+                            <span class="badge bg-secondary">No</span>
+                        @endif
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="6">Walang subjects na tumugma.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted">Walang subjects na tumugma.</td></tr>
             @endforelse
         </tbody>
     </table>
 
     {{ $subjects->links() }}
-</body>
-</html>
+@endsection

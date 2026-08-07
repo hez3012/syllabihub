@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\SubjectChangeRequest;
 use App\Models\Syllabus;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,13 +18,20 @@ class DashboardController extends Controller
 {
     public function faculty(Request $request): View
     {
-        $subjects = $request->user()
-            ->subjects()
+        $user = $request->user();
+
+        $subjects = $user->createdSubjects()
             ->with(['program', 'latestSyllabus'])
             ->orderBy('subject_code')
             ->get();
 
-        return view('dashboard.faculty', compact('subjects'));
+        $pendingRequests = $user->subjectChangeRequests()
+            ->with('subject')
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        return view('dashboard.faculty', compact('subjects', 'pendingRequests'));
     }
 
     public function admin(): View
@@ -37,11 +45,14 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $pendingRequestCount = SubjectChangeRequest::where('status', 'pending')->count();
+
         return view('dashboard.admin', compact(
             'totalSubjects',
             'withSyllabus',
             'missing',
             'recentUploads',
+            'pendingRequestCount',
         ));
     }
 }

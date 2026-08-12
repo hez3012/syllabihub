@@ -49,4 +49,22 @@ class Subject extends Model
     {
         return $this->changeRequests()->where('status', 'pending')->exists();
     }
+
+    /** Human-readable "Nth Year" label for year_level (1-4) — matches the Year Level dropdown options. */
+    public function yearLevelLabel(): string
+    {
+        return match ($this->year_level) {
+            1 => '1st Year',
+            2 => '2nd Year',
+            3 => '3rd Year',
+            4 => '4th Year',
+            default => (string) $this->year_level,
+        };
+    }
+
+    /** Human-readable label for semester (1st/2nd/summer) — for display only, the raw value is still what's stored/queried. */
+    public function semesterLabel(): string
+    {
+        return ucfirst($this->semester);
+    }
 }

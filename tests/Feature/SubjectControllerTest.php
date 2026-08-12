@@ -3,12 +3,22 @@
 namespace Tests\Feature;
 
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class SubjectControllerTest extends TestCase
 {
     use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // All routes require auth now (CLAUDE.md §7, 2026-08-12) — every
+        // request in this class needs a logged-in user regardless of role.
+        $this->actingAs(User::factory()->create(['role' => 'faculty']));
+    }
 
     public function test_index_lists_subjects(): void
     {

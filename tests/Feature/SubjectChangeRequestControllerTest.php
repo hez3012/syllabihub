@@ -56,6 +56,29 @@ class SubjectChangeRequestControllerTest extends TestCase
         $this->assertSame('Original Title', $subject->fresh()->title);
     }
 
+    public function test_submitting_an_edit_request_with_no_actual_changes_is_rejected(): void
+    {
+        $faculty = User::factory()->create(['role' => 'faculty']);
+        $subject = Subject::factory()->create(['created_by' => $faculty->id]);
+
+        $response = $this->actingAs($faculty)->post("/subjects/{$subject->id}/request-update", [
+            'program_id' => $subject->program_id,
+            'subject_code' => $subject->subject_code,
+            'title' => $subject->title,
+            'year_level' => $subject->year_level,
+            'semester' => $subject->semester,
+            'prerequisite' => $subject->prerequisite,
+            'corequisite' => $subject->corequisite,
+            'lecture_hours' => $subject->lecture_hours,
+            'lab_hours' => $subject->lab_hours,
+            'credited_units' => $subject->credited_units,
+            'tuition_hours' => $subject->tuition_hours,
+        ]);
+
+        $response->assertSessionHasErrors('request');
+        $this->assertDatabaseMissing('subject_change_requests', ['subject_id' => $subject->id]);
+    }
+
     public function test_faculty_cannot_request_changes_to_a_subject_they_did_not_create(): void
     {
         $faculty = User::factory()->create(['role' => 'faculty']);

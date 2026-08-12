@@ -13,7 +13,7 @@ class Syllabus extends Model
     protected $table = 'syllabi';
 
     protected $fillable = [
-        'subject_id', 'file_path', 'file_type',
+        'subject_id', 'file_path', 'file_type', 'original_filename',
         'raw_text', 'curriculum_year',
         'status', 'uploaded_by',
     ];
@@ -26,5 +26,11 @@ class Syllabus extends Model
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /** Human-readable label for status (pending/processed/failed) — for display only, the raw value is still what's stored/queried. */
+    public function statusLabel(): string
+    {
+        return ucfirst($this->status);
     }
 }

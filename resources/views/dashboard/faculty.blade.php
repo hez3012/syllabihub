@@ -13,7 +13,7 @@
         <ul class="list-group mb-4">
             @foreach ($pendingRequests as $req)
                 <li class="list-group-item">
-                    {{ ucfirst($req->action) }} — {{ $req->subject->subject_code }} — naghihintay ng admin approval
+                    {{ ucfirst($req->action) }} — {{ $req->subject->subject_code }} — awaiting admin approval
                 </li>
             @endforeach
         </ul>
@@ -33,11 +33,11 @@
                 <tr>
                     <td>{{ $subject->subject_code }}</td>
                     <td><a href="{{ route('subjects.show', $subject) }}">{{ $subject->title }}</a></td>
-                    <td>{{ $subject->latestSyllabus->status ?? 'wala pa' }}</td>
+                    <td>{{ $subject->latestSyllabus?->statusLabel() ?? 'Not uploaded' }}</td>
                     <td><a href="{{ route('syllabi.create', $subject) }}" class="btn btn-sm btn-outline-primary">Upload/Replace</a></td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-center text-muted">Wala ka pang nagagawang subject.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">You have not created any subjects yet.</td></tr>
             @endforelse
         </tbody>
     </table>

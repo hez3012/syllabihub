@@ -2,10 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\SyllabusController;
 use App\Models\Program;
 use App\Models\Subject;
+use App\Models\Syllabus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SubjectManagementTest extends TestCase
@@ -77,6 +81,98 @@ class SubjectManagementTest extends TestCase
         ]));
 
         $response->assertSessionHasErrors('subject_code');
+    }
+
+    public function test_duplicate_subject_code_across_different_programs_is_rejected(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $programA = Program::factory()->create();
+        $programB = Program::factory()->create();
+        Subject::factory()->create(['program_id' => $programA->id, 'subject_code' => 'TST 504']);
+
+        $response = $this->actingAs($admin)->post('/subjects', $this->subjectPayload([
+            'program_id' => $programB->id,
+            'subject_code' => 'TST 504',
+        ]));
+
+        $response->assertSessionHasErrors('subject_code');
+    }
+
+    public function test_duplicate_title_is_rejected_regardless_of_program(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Subject::factory()->create(['title' => 'Shared Fixture Title']);
+
+        $response = $this->actingAs($admin)->post('/subjects', $this->subjectPayload([
+            'subject_code' => 'TST 505',
+            'title' => 'Shared Fixture Title',
+        ]));
+
+        $response->assertSessionHasErrors('title');
+    }
+
+    public function test_a_soft_deleted_subjects_code_and_title_can_be_reused(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $old = Subject::factory()->create(['subject_code' => 'TST 506', 'title' => 'Retired Curriculum Subject']);
+        $old->delete();
+
+        $response = $this->actingAs($admin)->post('/subjects', $this->subjectPayload([
+            'subject_code' => 'TST 506',
+            'title' => 'Retired Curriculum Subject',
+        ]));
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('subjects', ['subject_code' => 'TST 506', 'deleted_at' => null]);
+    }
+
+    public function test_creating_a_subject_can_include_an_inline_syllabus_upload(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->post('/subjects', array_merge($this->subjectPayload(), [
+            'file_pdf' => UploadedFile::fake()->create('inline-add.pdf', 10, 'application/pdf'),
+            'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
+        ]));
+
+        $response->assertRedirect();
+        $subject = Subject::where('subject_code', 'TST 500')->firstOrFail();
+        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->count());
+    }
+
+    public function test_creating_a_subject_with_an_inline_file_but_no_curriculum_year_is_rejected(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->post('/subjects', array_merge($this->subjectPayload(), [
+            'file_pdf' => UploadedFile::fake()->create('inline-add.pdf', 10, 'application/pdf'),
+        ]));
+
+        $response->assertSessionHasErrors('curriculum_year');
+        $this->assertDatabaseMissing('subjects', ['subject_code' => 'TST 500']);
+    }
+
+    public function test_editing_a_subject_can_replace_its_syllabus_inline(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $subject = Subject::factory()->create();
+        $original = Syllabus::factory()->create(['subject_id' => $subject->id, 'file_type' => 'pdf']);
+
+        $response = $this->actingAs($admin)->put("/subjects/{$subject->id}", array_merge($this->subjectPayload([
+            'program_id' => $subject->program_id,
+            'subject_code' => $subject->subject_code,
+            'title' => $subject->title,
+        ]), [
+            'file_pdf' => UploadedFile::fake()->create('inline-replace.pdf', 10, 'application/pdf'),
+            'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
+        ]));
+
+        $response->assertRedirect();
+        $this->assertSoftDeleted('syllabi', ['id' => $original->id]);
+        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->count());
     }
 
     public function test_admin_can_edit_any_subject_directly(): void

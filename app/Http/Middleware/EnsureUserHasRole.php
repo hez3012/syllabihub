@@ -17,7 +17,7 @@ class EnsureUserHasRole
         $user = $request->user();
 
         if (!$user || !in_array($user->role, $roles, true)) {
-            abort(403, 'Wala kang access sa page na ito.');
+            abort(403, 'You do not have access to this page.');
         }
 
         return $next($request);

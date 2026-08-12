@@ -3,10 +3,10 @@
 @section('title', 'Create Faculty Account — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ route('faculty-accounts.index') }}">&larr; Back to Faculty Accounts</a></p>
+    <p><a href="{{ url()->previous(route('faculty-accounts.index')) }}">&larr; Back</a></p>
 
-    <h1 class="h3 mb-2">Create a faculty account</h1>
-    <p class="text-muted">I-relay ang email/password sa faculty member (manual, sa labas ng system).</p>
+    <h1 class="h3 mb-2">Create a Faculty Account</h1>
+    <p class="text-muted">Relay the email and password to the faculty member manually, outside the system.</p>
 
     <form method="POST" action="{{ route('faculty-accounts.store') }}" class="col-md-6">
         @csrf

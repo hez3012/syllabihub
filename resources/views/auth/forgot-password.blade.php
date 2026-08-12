@@ -6,7 +6,7 @@
     <div class="row justify-content-center">
         <div class="col-md-5">
             <h1 class="h3 mb-3">Forgot your password?</h1>
-            <p class="text-muted">Ilagay ang email mo, magpapadala kami ng reset link.</p>
+            <p class="text-muted">Enter your email address and we will send you a password reset link.</p>
 
             <form method="POST" action="{{ route('password.email') }}">
                 @csrf

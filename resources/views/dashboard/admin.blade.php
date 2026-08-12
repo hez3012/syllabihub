@@ -51,12 +51,12 @@
             @forelse ($recentUploads as $syllabus)
                 <tr>
                     <td>{{ $syllabus->subject?->subject_code }}</td>
-                    <td>{{ $syllabus->status }}</td>
+                    <td>{{ $syllabus->statusLabel() }}</td>
                     <td>{{ $syllabus->uploader?->name ?? '—' }}</td>
                     <td>{{ $syllabus->created_at?->format('Y-m-d H:i') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-center text-muted">Wala pang uploads.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">No uploads yet.</td></tr>
             @endforelse
         </tbody>
     </table>

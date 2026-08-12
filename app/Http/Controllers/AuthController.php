@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
-                ->withErrors(['email' => 'Mali ang email o password.'])
+                ->withErrors(['email' => 'The email or password you entered is incorrect.'])
                 ->onlyInput('email');
         }
 

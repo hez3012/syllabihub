@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use App\Models\Syllabus;
-use App\Services\SyllabusTextExtractor;
+use App\Services\SyllabusFileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,19 +12,19 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Syllabus upload/download/preview.
+ * Standalone syllabus upload page, plus download/preview.
  *
  * Storage: files go on the 'local' disk (storage/app/private — not
  * web-accessible directly). download()/preview() are the only ways to
  * reach a file's bytes — one controlled point of access instead of
- * guessable public URLs. Both are public (matches the role table: even a
- * public visitor can view/download); it's upload that's gated behind
- * auth+role in routes/web.php.
+ * guessable public URLs. All three require auth (CLAUDE.md §7).
  *
- * Upload accepts a PDF and/or a DOCX in the same submission (two separate
- * file inputs, each optional, at least one required) — each becomes its
- * own Syllabus row, since the schema already supports multiple rows per
- * subject and latestSyllabus() just picks the newest.
+ * This is the "fast path" for faculty to jump straight to uploading —
+ * SubjectController::store()/update() also accept these same file_pdf/
+ * file_docx fields inline on the Add/Edit Subject forms, both delegating
+ * to SyllabusFileService so the actual upload/replace logic lives in one
+ * place. See that service for the validation rules and "replace, don't
+ * append" behavior.
  *
  * Text extraction (raw_text, for SearchController's syllabus-content
  * search) runs synchronously right after each file is stored — see
@@ -33,24 +33,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class SyllabusController extends Controller
 {
-    private const MAX_FILE_KILOBYTES = 20480; // 20MB
-
-    /** field name => [validation mimes rule, stored file_type] */
-    private const FILE_INPUTS = [
-        'file_pdf' => 'pdf',
-        'file_docx' => 'docx',
-    ];
-
-    public function __construct(private readonly SyllabusTextExtractor $extractor)
+    public function __construct(private readonly SyllabusFileService $files)
     {
     }
 
-    /** Dropdown options for curriculum_year — current academic year ± a couple. */
+    /** Dropdown options for curriculum_year — fixed floor per Rico (2026-08-12), floating ceiling at the current year. */
     public static function curriculumYearOptions(): array
     {
-        $startYear = (int) date('Y') - 2;
+        $startYear = 2022;
+        $endYear = max($startYear, (int) date('Y'));
 
-        return collect(range($startYear, $startYear + 4))
+        return collect(range($startYear, $endYear))
             ->map(fn (int $y) => "{$y}-" . ($y + 1))
             ->all();
     }
@@ -65,46 +58,27 @@ class SyllabusController extends Controller
 
     public function store(Request $request, Subject $subject): RedirectResponse
     {
-        $validated = $request->validate([
-            'file_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:' . self::MAX_FILE_KILOBYTES],
-            'file_docx' => ['nullable', 'file', 'mimes:docx', 'max:' . self::MAX_FILE_KILOBYTES],
-            'curriculum_year' => ['nullable', 'string', 'in:' . implode(',', self::curriculumYearOptions())],
-        ]);
+        $validated = $request->validate(array_merge(
+            SyllabusFileService::validationRules(),
+            ['curriculum_year' => SyllabusFileService::curriculumYearRule()]
+        ));
 
-        if (!$request->hasFile('file_pdf') && !$request->hasFile('file_docx')) {
+        if (!SyllabusFileService::hasAnyFile($validated)) {
             return back()
-                ->withErrors(['file_pdf' => 'Kailangan ng kahit isang file — PDF o DOCX.'])
+                ->withErrors(['file_pdf' => 'At least one file is required — PDF or DOCX.'])
                 ->withInput();
         }
 
-        $notes = [];
-
-        foreach (self::FILE_INPUTS as $field => $fileType) {
-            if (!$request->hasFile($field)) {
-                continue;
-            }
-
-            $file = $validated[$field];
-            $storedPath = $file->store("syllabi/{$subject->id}", 'local');
-            $absolutePath = Storage::disk('local')->path($storedPath);
-            $rawText = $this->extractor->extract($absolutePath, $fileType);
-
-            $syllabus = Syllabus::create([
-                'subject_id' => $subject->id,
-                'file_path' => $storedPath,
-                'file_type' => $fileType,
-                'raw_text' => $rawText,
-                'curriculum_year' => $validated['curriculum_year'] ?? null,
-                'status' => $rawText !== null ? 'processed' : 'failed',
-                'uploaded_by' => $request->user()->id,
-            ]);
-
-            $notes[] = strtoupper($fileType) . " #{$syllabus->id}: " . ($rawText !== null ? 'processed' : 'failed');
-        }
+        $notes = $this->files->storeFor(
+            $subject,
+            $validated,
+            $request->user()->id,
+            $validated['curriculum_year'] ?? null
+        );
 
         return redirect()
             ->route('subjects.show', $subject)
-            ->with('status', 'Na-upload: ' . implode(', ', $notes) . '.');
+            ->with('status', 'Uploaded: ' . implode(', ', $notes) . '.');
     }
 
     public function download(Syllabus $syllabus): StreamedResponse

@@ -16,22 +16,27 @@
         <div class="col-auto">
             <label class="form-label">Program</label>
             <select name="program" class="form-select">
-                <option value="">-- any --</option>
+                <option value="">-- Any --</option>
                 <option value="BSIT" @selected(($filters['program'] ?? null) === 'BSIT')>BSIT</option>
                 <option value="DIT" @selected(($filters['program'] ?? null) === 'DIT')>DIT</option>
             </select>
         </div>
         <div class="col-auto">
-            <label class="form-label">Year level</label>
-            <input type="number" name="year_level" min="1" max="10" class="form-control" value="{{ $filters['year_level'] ?? '' }}">
+            <label class="form-label">Year Level</label>
+            <select name="year_level" class="form-select">
+                <option value="">-- Any --</option>
+                @foreach ([1 => '1st Year', 2 => '2nd Year', 3 => '3rd Year', 4 => '4th Year'] as $value => $label)
+                    <option value="{{ $value }}" @selected((string) ($filters['year_level'] ?? '') === (string) $value)>{{ $label }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="col-auto">
             <label class="form-label">Semester</label>
             <select name="semester" class="form-select">
-                <option value="">-- any --</option>
+                <option value="">-- Any --</option>
                 <option value="1st" @selected(($filters['semester'] ?? null) === '1st')>1st</option>
                 <option value="2nd" @selected(($filters['semester'] ?? null) === '2nd')>2nd</option>
-                <option value="summer" @selected(($filters['semester'] ?? null) === 'summer')>summer</option>
+                <option value="summer" @selected(($filters['semester'] ?? null) === 'summer')>Summer</option>
             </select>
         </div>
         <div class="col-auto">
@@ -56,8 +61,8 @@
                     <td>{{ $subject->subject_code }}</td>
                     <td><a href="{{ route('subjects.show', $subject) }}">{{ $subject->title }}</a></td>
                     <td>{{ $subject->program?->code }}</td>
-                    <td>{{ $subject->year_level }}</td>
-                    <td>{{ $subject->semester }}</td>
+                    <td>{{ $subject->yearLevelLabel() }}</td>
+                    <td>{{ $subject->semesterLabel() }}</td>
                     <td>
                         @if ($subject->latestSyllabus)
                             <span class="badge bg-success">Yes</span>
@@ -67,7 +72,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center text-muted">Walang subjects na tumugma.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted">No matching subjects found.</td></tr>
             @endforelse
         </tbody>
     </table>

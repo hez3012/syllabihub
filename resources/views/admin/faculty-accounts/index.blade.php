@@ -3,7 +3,7 @@
 @section('title', 'Faculty Accounts — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ route('dashboard.admin') }}">&larr; Back to Admin Dashboard</a></p>
+    <p><a href="{{ url()->previous(route('dashboard.admin')) }}">&larr; Back</a></p>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Faculty Accounts</h1>
@@ -26,7 +26,7 @@
                     <td>{{ $user->created_subjects_count }}</td>
                 </tr>
             @empty
-                <tr><td colspan="3" class="text-center text-muted">Wala pang faculty accounts.</td></tr>
+                <tr><td colspan="3" class="text-center text-muted">No faculty accounts yet.</td></tr>
             @endforelse
         </tbody>
     </table>

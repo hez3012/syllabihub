@@ -29,6 +29,17 @@ class SearchControllerTest extends TestCase
 {
     private array $subjectIds = [];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // /api/search requires auth now (CLAUDE.md §7, 2026-08-12). Reuses
+        // an existing user rather than creating a throwaway one, same
+        // reasoning as existingUserId() below — this class commits for
+        // real instead of using DatabaseTransactions.
+        $this->actingAs(User::find($this->existingUserId()));
+    }
+
     protected function tearDown(): void
     {
         Syllabus::withTrashed()->whereIn('subject_id', $this->subjectIds)->forceDelete();

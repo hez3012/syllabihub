@@ -50,6 +50,6 @@ class FacultyAccountController extends Controller
         ]);
 
         return redirect()->route('faculty-accounts.index')
-            ->with('status', "Nagawa ang faculty account para kay {$validated['name']}. I-relay ang email/password sa kanila (manual, outside ng system).");
+            ->with('status', "Faculty account created for {$validated['name']}. Please relay the email and password to them manually, outside the system.");
     }
 }

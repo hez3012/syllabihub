@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -14,8 +13,10 @@ use Illuminate\Database\Seeder;
  * DO NOT reuse these outside local development, and delete/rotate before
  * anything resembling a real deployment.
  *
- * Depends on SubjectSeeder having run first (attaches the faculty test
- * account to a few subjects so dashboard.faculty has something to show).
+ * Subjects are no longer assigned to faculty via pivot — faculty create
+ * their own subjects directly (see SubjectController::store). The test
+ * faculty account here starts with no subjects until it (or you, logged
+ * in as it) creates some.
  *
  * Run standalone: php artisan db:seed --class=UserSeeder
  */
@@ -32,13 +33,6 @@ class UserSeeder extends Seeder
         foreach ($users as $data) {
             // User::$casts hashes 'password' automatically on save.
             User::updateOrCreate(['email' => $data['email']], $data);
-        }
-
-        $faculty = User::where('email', 'faculty@test.syllabihub')->first();
-        $someSubjectIds = Subject::query()->orderBy('id')->limit(3)->pluck('id');
-
-        if ($faculty && $someSubjectIds->isNotEmpty()) {
-            $faculty->subjects()->syncWithoutDetaching($someSubjectIds);
         }
 
         $this->command?->info('Seeded ' . count($users) . ' test accounts (admin/faculty/intern), password: password123');

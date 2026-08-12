@@ -17,33 +17,33 @@ Route::get('/', fn () => redirect()->route('subjects.index'));
 
 /*
 |--------------------------------------------------------------------------
-| Public — search, browse, subject detail, syllabus download/preview
+| Search, browse, subject detail, syllabus download/preview (protected)
 |--------------------------------------------------------------------------
-| No auth required. Matches the "Public Visitor" role: view/search/
-| download only.
+| All require login — no public/guest access anywhere except the login
+| page itself (CLAUDE.md §7). Any authenticated role (admin/faculty/
+| intern) may view/search/download.
 */
 
-// "Ask SyllabiHub" fuzzy search — public, JSON. Lives in web.php (not
-// routes/api.php) since this project has no api routing group registered
-// in bootstrap/app.php and doesn't use Sanctum; GET requests are exempt
-// from CSRF so this is safe as-is.
-Route::get('/api/search', [SearchController::class, 'search'])->name('api.search');
-
-Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
-
-// NOTE: literal "/subjects/create" MUST be registered before the
-// "/subjects/{subject}" wildcard below — Laravel matches routes in
-// registration order, so if the wildcard came first it would swallow
-// "create" as a {subject} id and 404 (no Subject with id="create").
 Route::middleware(['auth', 'role:admin,faculty,intern'])->group(function () {
+    // "Ask SyllabiHub" fuzzy search — JSON. Lives in web.php (not
+    // routes/api.php) since this project has no api routing group
+    // registered in bootstrap/app.php and doesn't use Sanctum.
+    Route::get('/api/search', [SearchController::class, 'search'])->name('api.search');
+
+    Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
+
+    // NOTE: literal "/subjects/create" MUST be registered before the
+    // "/subjects/{subject}" wildcard below — Laravel matches routes in
+    // registration order, so if the wildcard came first it would swallow
+    // "create" as a {subject} id and 404 (no Subject with id="create").
     Route::get('/subjects/create', [SubjectController::class, 'create'])->name('subjects.create');
     Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+
+    Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
+
+    Route::get('/syllabi/{syllabus}/download', [SyllabusController::class, 'download'])->name('syllabi.download');
+    Route::get('/syllabi/{syllabus}/preview', [SyllabusController::class, 'preview'])->name('syllabi.preview');
 });
-
-Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
-
-Route::get('/syllabi/{syllabus}/download', [SyllabusController::class, 'download'])->name('syllabi.download');
-Route::get('/syllabi/{syllabus}/preview', [SyllabusController::class, 'preview'])->name('syllabi.preview');
 
 /*
 |--------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 @section('title', 'Add Subject — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('subjects.index')) }}">&larr; Back</a></p>
+    <p><a href="{{ route('subjects.index') }}">&larr; Back</a></p>
 
     <h1 class="h3 mb-4">Add a New Subject</h1>
 

@@ -3,7 +3,7 @@
 @section('title', 'Upload Syllabus — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('subjects.show', $subject)) }}">&larr; Back</a></p>
+    <p><a href="{{ route('subjects.show', $subject) }}">&larr; Back</a></p>
 
     <h1 class="h3 mb-2">Upload Syllabus for {{ $subject->subject_code }} — {{ $subject->title }}</h1>
     <p class="text-muted">You may upload one file or both — PDF and DOCX — as long as at least one file is provided. Uploading a new file replaces the existing file of the same type for this subject; it will not be added alongside it.</p>

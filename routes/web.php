@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FacultyAccountController;
 use App\Http\Controllers\PasswordResetController;
@@ -29,6 +30,15 @@ Route::middleware(['auth', 'role:admin,faculty,intern'])->group(function () {
     // routes/api.php) since this project has no api routing group
     // registered in bootstrap/app.php and doesn't use Sanctum.
     Route::get('/api/search', [SearchController::class, 'search'])->name('api.search');
+
+    // "Sage" chatbot (App\Services\ChatbotService) — same
+    // auth gate as search above, plus two GLOBAL (not per-user) throttles
+    // registered in AppServiceProvider — Gemini's free-tier 15 RPM /
+    // 1,500 RPD quota belongs to the whole API key, shared across every
+    // user, so a per-user throttle alone wouldn't actually protect it.
+    Route::post('/api/chat', [ChatbotController::class, 'chat'])
+        ->middleware(['throttle:gemini-per-minute', 'throttle:gemini-per-day'])
+        ->name('api.chat');
 
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
 

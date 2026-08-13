@@ -1,2 +1,261 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* ============================================================
+   "Sage" floating chat widget (layouts/app.blade.php)
+   Structurally plain (test-stub) — animation/transition only,
+   per Rico 2026-08-12. Real visual design is the frontend team's
+   job (CLAUDE.md §2/§6).
+   ============================================================ */
+
+.chatbot-widget {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Real bug (Rico, 2026-08-13): this container is sized by its
+       CHILDREN (the 340x460 .chatbot-panel + the FAB), so even while
+       closed it occupies that full ~340x528 box in the page's fixed
+       layer — .chatbot-panel already sets pointer-events:none on
+       itself while closed, but that never extended to THIS element,
+       so the empty/transparent area of the container itself silently
+       absorbed every click underneath it (Preview/Download/Full
+       Screen on any page whose content happens to sit under that
+       corner) with no error, no network request, nothing — clicks
+       just landed on a plain, non-interactive <div> instead of the
+       real page content one layer down. none here restores normal
+       click-through; .chatbot-fab re-enables itself below, and
+       .chatbot-panel already re-enables itself while open further
+       down this file — both still need their own pointer-events:auto,
+       since "none" here would otherwise cascade to them too. */
+    pointer-events: none;
+}
+
+.chatbot-widget .chatbot-fab {
+    pointer-events: auto;
+}
+
+.chatbot-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.chatbot-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .3);
+}
+
+.chatbot-fab:active {
+    transform: scale(.95);
+}
+
+.chatbot-panel {
+    width: 340px;
+    max-width: calc(100vw - 3rem);
+    height: 460px;
+    max-height: calc(100vh - 8rem);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: .75rem;
+
+    /* Closed state: scaled down, invisible, non-interactive, growing
+       out from the FAB's corner rather than just appearing/disappearing. */
+    transform: scale(.9) translateY(12px);
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: bottom right;
+    transition: transform .22s cubic-bezier(.34, 1.56, .64, 1), opacity .18s ease;
+}
+
+.chatbot-widget.is-open .chatbot-panel {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chatbot-panel-header {
+    background: #0d6efd;
+    color: #fff;
+    padding: .75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.chatbot-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: #fff;
+    opacity: .85;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+}
+
+.chatbot-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    background: #f8f9fa;
+    scroll-behavior: smooth;
+}
+
+.chatbot-msg {
+    display: flex;
+    max-width: 88%;
+    flex-direction: column;
+}
+
+.chatbot-msg-user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.chatbot-msg-assistant {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.chatbot-bubble {
+    padding: .5rem .85rem;
+    border-radius: 14px;
+    font-size: .9rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chatbot-msg-user .chatbot-bubble {
+    background: #0d6efd;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.chatbot-msg-assistant .chatbot-bubble {
+    background: #fff;
+    color: #212529;
+    border: 1px solid #e9ecef;
+    border-bottom-left-radius: 4px;
+}
+
+/* Assistant replies render as real HTML now (see chatbot.js
+   formatAssistantHtml()) instead of plain textContent, so "**bold**"
+   and "- item" lines show as actual emphasis/bullets instead of
+   literal asterisks and dashes with no spacing. */
+.chatbot-bubble-list {
+    margin: .35rem 0;
+    padding-left: 1.15rem;
+}
+
+.chatbot-bubble-list li {
+    margin-bottom: .2rem;
+}
+
+.chatbot-bubble-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Entrance animation — every new bubble (user or assistant) rises and
+   fades in instead of just popping into place. */
+.chatbot-msg-in {
+    animation: chatbot-msg-in .25s ease both;
+}
+
+@keyframes chatbot-msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* "Typing..." indicator — three dots bouncing in sequence while a reply
+   is in flight. */
+.chatbot-typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #adb5bd;
+    display: inline-block;
+    margin: 0 1px;
+    animation: chatbot-typing-bounce 1.1s infinite ease-in-out;
+}
+
+.chatbot-typing-dot:nth-child(2) { animation-delay: .15s; }
+.chatbot-typing-dot:nth-child(3) { animation-delay: .3s; }
+
+@keyframes chatbot-typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.chatbot-results {
+    margin-top: .4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    width: 100%;
+}
+
+.chatbot-result-link {
+    font-size: .82rem;
+    padding: .35rem .6rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    text-decoration: none;
+    color: #0d6efd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    transition: background-color .15s ease, transform .15s ease;
+}
+
+.chatbot-result-link:hover {
+    background: #eaf2ff;
+    transform: translateX(2px);
+}
+
+.chatbot-form {
+    display: flex;
+    gap: .5rem;
+    padding: .75rem;
+    border-top: 1px solid #e9ecef;
+    background: #fff;
+    flex-shrink: 0;
+}

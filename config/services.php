@@ -22,6 +22,17 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // "Sage" chatbot (App\Services\ChatbotService) — free-tier
+    // Google Gemini, per Rico 2026-08-12. Get a key at aistudio.google.com
+    // -> Get API key. Double-check GEMINI_MODEL is still a current model
+    // name there before going live; provider model names/versions change
+    // over time (gemini-2.5-flash and older were already 404ing for new
+    // accounts as of 2026-08-12) and this default may age out too.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

@@ -3,7 +3,7 @@
 @section('title', 'Faculty Accounts — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('dashboard.admin')) }}">&larr; Back</a></p>
+    <p><a href="{{ route('dashboard.admin') }}">&larr; Back</a></p>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Faculty Accounts</h1>

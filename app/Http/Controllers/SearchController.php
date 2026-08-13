@@ -35,16 +35,7 @@ class SearchController extends Controller
         ]);
 
         $query = trim($validated['q'] ?? '');
-
-        if ($query === '') {
-            return response()->json(['query' => '', 'count' => 0, 'results' => []]);
-        }
-
-        $subjectResults = $this->searchSubjects($query);
-        $syllabusResults = $this->searchSyllabusContent($query);
-
-        $results = $this->mergeResults($subjectResults, $syllabusResults);
-        $results = array_slice($results, 0, self::MAX_RESULTS);
+        $results = $this->performSearch($query);
 
         return response()->json([
             'query' => $query,
@@ -54,12 +45,49 @@ class SearchController extends Controller
     }
 
     /**
+     * The actual subject+syllabus retrieval, split out from search() so
+     * ChatbotService can reuse it as grounding context for "Ask
+     * SyllabiHub" chat replies (per Rico, 2026-08-12) without going
+     * through HTTP or duplicating the FULLTEXT/fuzzy logic. Same
+     * no-LLM, traces-back-to-a-real-row search either way — the chatbot
+     * only adds a conversational layer on top of this, it doesn't
+     * change how results are found.
+     *
+     * @param  bool  $allowFuzzy  false skips the PHP fuzzy fallback, keeping
+     *                            only exact/prefix FULLTEXT matches. Off by
+     *                            default only for ChatbotService's per-
+     *                            keyword retry (see its gatherResults()) —
+     *                            fuzzy scoring a single generic word (e.g.
+     *                            "credit", "ilan") against every subject
+     *                            can coincidentally clear the similarity
+     *                            threshold and surface an unrelated
+     *                            subject, which is worse there than
+     *                            finding nothing.
+     * @return array<int, array<string, mixed>>
+     */
+    public function performSearch(string $query, bool $allowFuzzy = true): array
+    {
+        $query = trim($query);
+
+        if ($query === '') {
+            return [];
+        }
+
+        $subjectResults = $this->searchSubjects($query, $allowFuzzy);
+        $syllabusResults = $this->searchSyllabusContent($query);
+
+        $results = $this->mergeResults($subjectResults, $syllabusResults);
+
+        return array_slice($results, 0, self::MAX_RESULTS);
+    }
+
+    /**
      * Subject search: try FULLTEXT first (fast, index-backed). If it finds
      * nothing — most likely a typo — fall back to a PHP-side fuzzy scan.
      * The subjects table is curriculum-sized (tens to low hundreds of rows),
      * so scanning it in PHP for the fallback is cheap.
      */
-    private function searchSubjects(string $query): array
+    private function searchSubjects(string $query, bool $allowFuzzy = true): array
     {
         $boolean = $this->toBooleanQuery($query);
 
@@ -78,7 +106,7 @@ class SearchController extends Controller
             }
         }
 
-        return $this->fuzzySubjectSearch($query);
+        return $allowFuzzy ? $this->fuzzySubjectSearch($query) : [];
     }
 
     private function fuzzySubjectSearch(string $query): array
@@ -250,6 +278,12 @@ class SearchController extends Controller
             'program' => $subject->program?->code,
             'year_level' => $subject->year_level,
             'semester' => $subject->semester,
+            'prerequisite' => $subject->prerequisite,
+            'corequisite' => $subject->corequisite,
+            'lecture_hours' => $subject->lecture_hours,
+            'lab_hours' => $subject->lab_hours,
+            'credited_units' => $subject->credited_units,
+            'tuition_hours' => $subject->tuition_hours,
             'match_type' => $matchType,
             'score' => $score,
             'has_syllabus' => $latest !== null,

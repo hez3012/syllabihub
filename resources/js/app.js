@@ -1,4 +1,5 @@
 import './bootstrap';
+import './chatbot';
 
 import * as bootstrap from 'bootstrap';
 

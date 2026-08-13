@@ -3,7 +3,7 @@
 @section('title', $subject->subject_code . ' — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('subjects.index')) }}">&larr; Back</a></p>
+    <p><a href="{{ route('subjects.index') }}">&larr; Back</a></p>
 
     <div class="d-flex justify-content-between align-items-start">
         <h1 class="h3">{{ $subject->subject_code }} — {{ $subject->title }}</h1>

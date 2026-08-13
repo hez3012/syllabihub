@@ -7,6 +7,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- Sage's sessionStorage key includes this — real bug (Rico,
+         2026-08-13, flagged as a security issue): without it, switching
+         accounts in the same browser tab kept showing the PREVIOUS
+         account's conversation, since sessionStorage is scoped to the
+         browser tab/origin, not to who's logged in. See chatbot.js. --}}
+    @auth
+        <meta name="auth-user-id" content="{{ auth()->id() }}">
+    @endauth
     <title>@yield('title', 'SyllabiHub')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -60,5 +69,45 @@
             @yield('content')
         </main>
     </div>
+
+    {{-- "Sage" floating chat widget — POST /api/chat
+         (App\Http\Controllers\ChatbotController). Auth-only, matches the
+         route's own auth gate. Plain structurally (test-stub, per
+         CLAUDE.md §2/§6 — the real design pass is Aivan/Denze's job) but
+         with working open/close + message animation, per Rico
+         2026-08-12. Named "Sage" per the team, 2026-08-13 — was
+         mislabeled "Ask SyllabiHub" before that, copied from the
+         unrelated plain-search feature's name (CLAUDE.md §9) by
+         mistake. Behavior lives in resources/js/chatbot.js. --}}
+    @auth
+        <div id="chatbot-widget" class="chatbot-widget">
+            <div class="chatbot-panel">
+                <div class="chatbot-panel-header">
+                    <span><i class="bi bi-stars"></i> Sage</span>
+                    <div class="chatbot-panel-header-actions">
+                        <button type="button" id="chatbot-new-chat" class="btn-icon" title="New chat" aria-label="Start a new chat">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                        <button type="button" id="chatbot-close" class="btn-close btn-close-white" aria-label="Close Sage"></button>
+                    </div>
+                </div>
+
+                <div id="chatbot-messages" class="chatbot-messages">
+                    <div class="chatbot-msg chatbot-msg-assistant chatbot-msg-in">
+                        <div class="chatbot-bubble">Hi, I'm Sage! I can help you find a subject or syllabus — for example, try asking "Does COMP 016 have a syllabus available?"</div>
+                    </div>
+                </div>
+
+                <form id="chatbot-form" class="chatbot-form">
+                    <input type="text" id="chatbot-input" class="form-control" placeholder="Ask a question..." autocomplete="off" maxlength="1000" aria-label="Message">
+                    <button type="submit" class="btn btn-primary" aria-label="Send"><i class="bi bi-send"></i></button>
+                </form>
+            </div>
+
+            <button type="button" id="chatbot-toggle" class="chatbot-fab" aria-label="Open Sage">
+                <i class="bi bi-chat-dots-fill"></i>
+            </button>
+        </div>
+    @endauth
 </body>
 </html>

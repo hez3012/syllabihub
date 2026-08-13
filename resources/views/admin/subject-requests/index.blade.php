@@ -3,7 +3,7 @@
 @section('title', 'Subject Change Requests — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('dashboard.admin')) }}">&larr; Back</a></p>
+    <p><a href="{{ route('dashboard.admin') }}">&larr; Back</a></p>
 
     <h1 class="h3 mb-4">Pending Subject Change Requests</h1>
 

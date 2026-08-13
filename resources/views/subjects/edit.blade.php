@@ -3,7 +3,7 @@
 @section('title', 'Edit ' . $subject->subject_code . ' — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ url()->previous(route('subjects.show', $subject)) }}">&larr; Back</a></p>
+    <p><a href="{{ route('subjects.show', $subject) }}">&larr; Back</a></p>
 
     <h1 class="h3 mb-4">Edit {{ $subject->subject_code }}</h1>
 

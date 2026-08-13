@@ -33,11 +33,15 @@ Route::middleware(['auth', 'role:admin,faculty,intern'])->group(function () {
 
     // "Sage" chatbot (App\Services\ChatbotService) — same
     // auth gate as search above, plus two GLOBAL (not per-user) throttles
-    // registered in AppServiceProvider — Gemini's free-tier 15 RPM /
-    // 1,500 RPD quota belongs to the whole API key, shared across every
-    // user, so a per-user throttle alone wouldn't actually protect it.
+    // registered in AppServiceProvider — Groq's free-tier 30 RPM /
+    // 14,400 RPD quota (llama-3.3-70b-versatile) belongs to the whole API
+    // key, shared across every user, so a per-user throttle alone
+    // wouldn't actually protect it. (Switched from Gemini 2026-08-13 —
+    // rollback here means reverting this line + AppServiceProvider's
+    // limiter names, the old gemini-per-minute/-day limiters are kept
+    // commented out there for that.)
     Route::post('/api/chat', [ChatbotController::class, 'chat'])
-        ->middleware(['throttle:gemini-per-minute', 'throttle:gemini-per-day'])
+        ->middleware(['throttle:groq-per-minute', 'throttle:groq-per-day'])
         ->name('api.chat');
 
     Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');

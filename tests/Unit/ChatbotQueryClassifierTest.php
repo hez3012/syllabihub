@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Pure unit tests — no DB, no HTTP, no Gemini — for
+ * Pure unit tests — no DB, no HTTP, no Groq — for
  * ChatbotQueryClassifier alone. Every case below is transcribed from
  * chatbot-test-cases.md's 140 sample questions (categories A-L), with
  * the expected type locked in against the classifier's actual verified

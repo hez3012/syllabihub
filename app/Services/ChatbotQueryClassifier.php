@@ -5,7 +5,7 @@ namespace App\Services;
 /**
  * Keyword-based classifier for "Sage" chat messages — decides
  * which retrieval strategy ChatbotRetrievalService should run before
- * Gemini is ever called. Deliberately not ML: per Rico, 2026-08-12, a
+ * Groq is ever called. Deliberately not ML: per Rico, 2026-08-12, a
  * fixed, readable set of keyword/pattern rules is enough for a
  * curriculum-sized chatbot and far easier to tune than a trained
  * classifier would be here. Originally tuned against chatbot-test-

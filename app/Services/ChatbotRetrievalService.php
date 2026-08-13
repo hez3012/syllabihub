@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
  * RAG retrieval for "Sage" — given a message already classified
  * by ChatbotQueryClassifier, runs the DB query that actually answers that
  * TYPE of question and hands back structured context for ChatbotService
- * to hand to Gemini. Per Rico, 2026-08-12 (chatbot-test-cases.md):
+ * to hand to Groq. Per Rico, 2026-08-12 (chatbot-test-cases.md):
  * different question shapes need genuinely different queries, not just a
  * text search — "Ano ang prereq ng COMP 003?" needs a join/chain lookup,
  * "Ilan ang total units ng BSIT?" needs an aggregate, etc.
@@ -115,7 +115,7 @@ class ChatbotRetrievalService
             // what they mean" instead), MULTI_QUESTION because each of
             // its sub-questions still needs whatever subject(s) it named
             // resolved — same textSearch() every other free-text category
-            // already uses, just labelled differently for Gemini.
+            // already uses, just labelled differently for Groq.
             default => ['subjects' => $this->textSearch($message, $history), 'notes' => []],
         };
     }
@@ -238,7 +238,7 @@ class ChatbotRetrievalService
 
             // Forward: does the anchor's own prerequisite/corequisite
             // text resolve to a real subject in the system? Include it
-            // too so Gemini can name it properly instead of just
+            // too so Groq can name it properly instead of just
             // echoing the raw text back.
             foreach (['prerequisite', 'corequisite'] as $field) {
                 $value = trim((string) $anchor->{$field});
@@ -573,7 +573,7 @@ class ChatbotRetrievalService
         // kay admin/intern sa faculty accounts to protect the system").
         // The check happens BEFORE the actual count query even runs, and
         // the real number never gets computed for a disallowed role —
-        // this is enforced here in PHP, not by asking Gemini nicely not
+        // this is enforced here in PHP, not by asking Groq nicely not
         // to repeat it, so there's no prompt-engineering trick that gets
         // it to leak the real figure to a Faculty account.
         if (preg_match('/faculty (account|user)s?|mga faculty account/i', $message)) {
@@ -692,7 +692,7 @@ class ChatbotRetrievalService
         // aggregate notes above — a curriculum-sized list is cheap to
         // include, and some "stats" questions are really judgment calls
         // over titles ("Ilan ang programming-related subjects?") that
-        // Gemini can only make if it can see them, not just a total.
+        // Groq can only make if it can see them, not just a total.
         return [
             'subjects' => $subjects->map(fn (Subject $s) => $this->formatSubjectModel($s, 'stats'))->all(),
             'notes' => $notes,
@@ -1128,7 +1128,7 @@ class ChatbotRetrievalService
      * something PRIVILEGED_ROLES-only. `subjects`/`notes` stay empty on
      * purpose — the real data (the actual count, the actual names) is
      * never computed for this role in the first place, so there is
-     * nothing for this note, or Gemini, to leak even by accident. The
+     * nothing for this note, or Groq, to leak even by accident. The
      * marker prefix is a private wire format between here and
      * ChatbotService::formatContext() — see its handling of it — not
      * something meant to reach the user verbatim.

@@ -12,24 +12,32 @@ use Illuminate\Support\Facades\Log;
  * strictly grounded in real DB data — ChatbotQueryClassifier decides
  * WHAT KIND of question this is, ChatbotRetrievalService actually runs
  * the matching DB query, and this class only orchestrates the pipeline
- * and talks to Gemini. See those two classes for the classification and
+ * and talks to Groq. See those two classes for the classification and
  * retrieval logic itself — this file has none of its own.
  *
  * Pipeline: classify the message -> retrieve matching data -> build a
- * prompt with that data as context -> call Gemini -> return a natural-
+ * prompt with that data as context -> call Groq -> return a natural-
  * language answer. Every reply is grounded in what was actually
  * retrieved; the model is instructed never to answer from its own
  * general knowledge, and never to invent a subject/syllabus/link that
  * isn't in the given context.
  *
- * If Gemini is unavailable (missing key, rate-limited, network error),
+ * If Groq is unavailable (missing key, rate-limited, network error),
  * reply() falls back to a plain "here's what I found" response built
  * from the retrieved data alone — no exception thrown, no 500/503 for
  * something this expected; the frontend always gets a normal 200 with
  * an `answer` it can just display.
  *
- * Provider: Google Gemini, free tier, via the plain REST API —
- * deliberately no SDK dependency, just Http::post().
+ * Provider: Groq, free tier, Llama 3.3 70B (llama-3.3-70b-versatile),
+ * via its OpenAI-compatible REST API — deliberately no SDK dependency,
+ * just Http::post(). Switched from Google Gemini on 2026-08-13 per Rico:
+ * Gemini Flash Lite was hallucinating, not reliably mirroring the user's
+ * language (Taglish/English/Tagalog), and getting grounded Q&A wrong
+ * even with matching context retrieved. The RAG pipeline itself
+ * (classifier, retrieval, system prompt, context formatting) is
+ * unchanged — only the model/provider changed. Legacy Gemini
+ * integration kept commented out below (buildContents()) for rollback,
+ * not deleted.
  */
 class ChatbotService
 {
@@ -77,7 +85,7 @@ Whenever you mention a subject, refer to it by its subject code AND title. When 
 FILE REQUESTS ("can you send me the PDF", "give me the file", "download COMP 016 for me", etc.): if the subject in the Context has a syllabus file available, the answer is YES, and real, working download buttons for it appear automatically right in this chat, below your reply — you do NOT need to (and cannot) attach a file yourself, but you must NEVER say something like "I can't send/download this directly in chat" or "you'll have to go to the subject's page instead" when a file IS available — that's both false (the buttons are right there) and confusing (you'd be contradicting the buttons the user can literally see under your own message). Just confirm the file exists and let them know they can download it right there. Only point them to the subject's page as the way to get a file when NO file is available in the Context at all — that's a genuinely different case (there's nothing to offer here in chat), not this one.
 PROMPT;
 
-    private const GEMINI_UNAVAILABLE_MESSAGE = 'Pasensya, hindi available ang AI assistant ngayon. Narito ang mga nahanap ko sa database:';
+    private const AI_UNAVAILABLE_MESSAGE = 'Pasensya, hindi available ang AI assistant ngayon. Narito ang mga nahanap ko sa database:';
 
     public function __construct(
         private readonly ChatbotQueryClassifier $classifier,
@@ -100,7 +108,7 @@ PROMPT;
 
         // Access-controlled data (faculty accounts, change requests,
         // system-wide upload activity — see PRIVILEGED_ROLES) for a
-        // non-admin/intern role never even reaches Gemini: enforced
+        // non-admin/intern role never even reaches Groq: enforced
         // here as a fixed, deterministic decline, not an LLM-phrased
         // one, so there's no prompt-engineering angle that talks the
         // model into repeating something it was never actually given
@@ -116,23 +124,25 @@ PROMPT;
 
         $sources = $this->attachSyllabusFiles($retrieved['subjects']);
 
-        $apiKey = config('services.gemini.key');
+        $apiKey = config('services.groq.key');
 
         if (!$apiKey) {
             return $this->fallbackResponse($sources, $type);
         }
 
-        $contents = $this->buildContents($trimmed, $history, $sources, $retrieved['notes'], $type);
-        $model = config('services.gemini.model');
+        $messages = $this->buildMessages($trimmed, $history, $sources, $retrieved['notes'], $type);
+        $model = config('services.groq.model');
 
         $response = Http::timeout(20)
-            ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-                'system_instruction' => ['parts' => [['text' => self::SYSTEM_PROMPT]]],
-                'contents' => $contents,
+            ->withToken($apiKey)
+            ->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => $model,
+                'messages' => $messages,
+                'temperature' => 0.3,
             ]);
 
         if ($response->failed()) {
-            Log::error('Gemini chat request failed', [
+            Log::error('Groq chat request failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -140,7 +150,7 @@ PROMPT;
             return $this->fallbackResponse($sources, $type);
         }
 
-        $answer = $response->json('candidates.0.content.parts.0.text');
+        $answer = $response->json('choices.0.message.content');
 
         return [
             'answer' => $answer !== null && $answer !== '' ? $answer : 'Hindi ako nakabuo ng sagot diyan — pwede bang subukan ulit o baguhin ang tanong?',
@@ -149,11 +159,11 @@ PROMPT;
         ];
     }
 
-    /** Gemini unavailable (no key, rate-limited, network/API error) — the raw retrieval still answers something. */
+    /** Groq unavailable (no key, rate-limited, network/API error) — the raw retrieval still answers something. */
     private function fallbackResponse(array $sources, string $type): array
     {
         return [
-            'answer' => self::GEMINI_UNAVAILABLE_MESSAGE,
+            'answer' => self::AI_UNAVAILABLE_MESSAGE,
             'sources' => $this->toSourceList($sources),
             'query_type' => $type,
         ];
@@ -239,31 +249,63 @@ PROMPT;
     }
 
     /**
-     * Gemini's "contents" array: prior turns (role-tagged by the caller
-     * as 'user'/'assistant', translated to Gemini's 'user'/'model') plus
-     * this turn's message, with the query type and retrieved context
-     * appended right after it.
+     * Groq/OpenAI-compatible "messages" array: a leading system message
+     * (SYSTEM_PROMPT — Gemini instead took this as a separate
+     * `system_instruction` field, but Groq's chat-completions endpoint
+     * wants it as the first message in the same array), then prior turns
+     * (role-tagged by the caller as 'user'/'assistant' — already
+     * OpenAI's own vocabulary, unlike Gemini which needed 'assistant'
+     * translated to 'model'), then this turn's message with the query
+     * type and retrieved context appended right after it.
      *
-     * @return array<int, array{role: string, parts: array<int, array{text: string}>}>
+     * @return array<int, array{role: string, content: string}>
      */
-    private function buildContents(string $message, array $history, array $sources, array $notes, string $type): array
+    private function buildMessages(string $message, array $history, array $sources, array $notes, string $type): array
     {
-        $contents = [];
+        $messages = [
+            ['role' => 'system', 'content' => self::SYSTEM_PROMPT],
+        ];
 
         foreach ($history as $turn) {
-            $contents[] = [
-                'role' => ($turn['role'] ?? '') === 'assistant' ? 'model' : 'user',
-                'parts' => [['text' => (string) ($turn['content'] ?? '')]],
+            $messages[] = [
+                'role' => ($turn['role'] ?? '') === 'assistant' ? 'assistant' : 'user',
+                'content' => (string) ($turn['content'] ?? ''),
             ];
         }
 
-        $contents[] = [
+        $messages[] = [
             'role' => 'user',
-            'parts' => [['text' => "{$message}\n\n---\nQuery type: {$type}\nContext:\n" . $this->formatContext($sources, $notes)]],
+            'content' => "{$message}\n\n---\nQuery type: {$type}\nContext:\n" . $this->formatContext($sources, $notes),
         ];
 
-        return $contents;
+        return $messages;
     }
+
+    // Legacy Gemini format — commented out, kept for potential rollback.
+    // Gemini's "contents" array: prior turns (role-tagged by the caller
+    // as 'user'/'assistant', translated to Gemini's 'user'/'model') plus
+    // this turn's message, with the query type and retrieved context
+    // appended right after it. SYSTEM_PROMPT went in a separate
+    // `system_instruction` field in reply(), not in this array.
+    //
+    // private function buildContents(string $message, array $history, array $sources, array $notes, string $type): array
+    // {
+    //     $contents = [];
+    //
+    //     foreach ($history as $turn) {
+    //         $contents[] = [
+    //             'role' => ($turn['role'] ?? '') === 'assistant' ? 'model' : 'user',
+    //             'parts' => [['text' => (string) ($turn['content'] ?? '')]],
+    //         ];
+    //     }
+    //
+    //     $contents[] = [
+    //         'role' => 'user',
+    //         'parts' => [['text' => "{$message}\n\n---\nQuery type: {$type}\nContext:\n" . $this->formatContext($sources, $notes)]],
+    //     ];
+    //
+    //     return $contents;
+    // }
 
     private function formatContext(array $sources, array $notes): string
     {

@@ -415,7 +415,7 @@ class ChatbotRetrievalServiceTest extends TestCase
         // A5 in chatbot-test-cases.md: "Mayroon bang subject na COMP
         // 025?" style question about a plausible-looking but nonexistent
         // code should find nothing — not a fuzzy near-match to a real
-        // one — so Gemini's strict-grounding "not found" rule actually
+        // one — so Groq's strict-grounding "not found" rule actually
         // applies instead of silently answering about the wrong subject.
         $result = $this->retrieval->retrieve(Type::SUBJECT_LOOKUP, 'Mayroon bang subject na ZZZ 999?');
 

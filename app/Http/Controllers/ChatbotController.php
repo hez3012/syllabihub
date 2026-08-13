@@ -13,13 +13,13 @@ use Illuminate\Http\Request;
  * persisted server-side for v1 — no chat-log table, no schema change.
  *
  * Always returns 200 with a body — ChatbotService::reply() never throws
- * for an unavailable Gemini API (missing key, rate limit, network
+ * for an unavailable Groq API (missing key, rate limit, network
  * error); it degrades to a plain "here's what I found in the database"
  * answer instead (see its docblock), so the frontend never needs a
  * separate error-response code path for that expected case.
  *
  * See ChatbotQueryClassifier/ChatbotRetrievalService/ChatbotService for
- * the actual classify -> retrieve -> prompt -> call Gemini pipeline.
+ * the actual classify -> retrieve -> prompt -> call Groq pipeline.
  */
 class ChatbotController extends Controller
 {

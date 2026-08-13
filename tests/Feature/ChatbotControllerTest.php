@@ -12,10 +12,10 @@ use Tests\TestCase;
 
 /**
  * "Sage" chatbot, end-to-end through POST /api/chat.
- * Gemini is always Http::fake()'d — these tests never make a real
+ * Groq is always Http::fake()'d — these tests never make a real
  * network call, so they don't burn free-tier quota and don't need a
- * real GEMINI_API_KEY to run. See ChatbotQueryClassifierTest (pure unit,
- * no DB) and ChatbotRetrievalServiceTest (DB, no Gemini) for the
+ * real GROQ_API_KEY to run. See ChatbotQueryClassifierTest (pure unit,
+ * no DB) and ChatbotRetrievalServiceTest (DB, no Groq) for the
  * classify/retrieve logic itself — this file is about the full pipeline
  * and the HTTP contract.
  *
@@ -31,22 +31,22 @@ class ChatbotControllerTest extends TestCase
         parent::setUp();
 
         $this->actingAs(User::factory()->create(['role' => 'faculty']));
-        config(['services.gemini.key' => 'fake-test-key']);
+        config(['services.groq.key' => 'fake-test-key']);
 
-        // The global gemini-per-minute/gemini-per-day limiters (see
+        // The global groq-per-minute/groq-per-day limiters (see
         // AppServiceProvider) key by a fixed 'global' string, not per
         // user/IP — clear them so one test's calls don't count against
         // the next test's budget.
-        RateLimiter::clear('gemini-per-minute');
-        RateLimiter::clear('gemini-per-day');
+        RateLimiter::clear('groq-per-minute');
+        RateLimiter::clear('groq-per-day');
     }
 
-    private function fakeGeminiReply(string $text): void
+    private function fakeGroqReply(string $text): void
     {
         Http::fake([
-            'generativelanguage.googleapis.com/*' => Http::response([
-                'candidates' => [
-                    ['content' => ['role' => 'model', 'parts' => [['text' => $text]]]],
+            'api.groq.com/*' => Http::response([
+                'choices' => [
+                    ['message' => ['role' => 'assistant', 'content' => $text]],
                 ],
             ]),
         ]);
@@ -71,7 +71,7 @@ class ChatbotControllerTest extends TestCase
 
     public function test_response_contract_matches_answer_sources_query_type(): void
     {
-        $this->fakeGeminiReply('Meron pong available na syllabus para sa COMP 016 — Web Development.');
+        $this->fakeGroqReply('Meron pong available na syllabus para sa COMP 016 — Web Development.');
 
         $response = $this->postJson('/api/chat', ['message' => 'Ano ang COMP 016?']);
 
@@ -88,7 +88,7 @@ class ChatbotControllerTest extends TestCase
         $uploader = User::factory()->create(['role' => 'admin']);
         Syllabus::factory()->create(['subject_id' => $subject->id, 'file_type' => 'pdf', 'uploaded_by' => $uploader->id]);
 
-        $this->fakeGeminiReply('Oo, may PDF na available para sa COMP 001.');
+        $this->fakeGroqReply('Oo, may PDF na available para sa COMP 001.');
 
         $response = $this->postJson('/api/chat', ['message' => 'Ano ang COMP 001?']);
 
@@ -101,14 +101,14 @@ class ChatbotControllerTest extends TestCase
         $this->assertSame('pdf', $source['syllabus_files'][0]['file_type']);
     }
 
-    public function test_gemini_receives_query_type_and_retrieved_context(): void
+    public function test_groq_receives_query_type_and_retrieved_context(): void
     {
-        $this->fakeGeminiReply('...');
+        $this->fakeGroqReply('...');
 
         $this->postJson('/api/chat', ['message' => 'Ano ang prereq ng COMP 003?'])->assertOk();
 
         Http::assertSent(function ($request) {
-            $text = $request['contents'][0]['parts'][0]['text'];
+            $text = collect($request['messages'])->last()['content'];
 
             return str_contains($text, 'Query type: prerequisite');
         });
@@ -116,7 +116,7 @@ class ChatbotControllerTest extends TestCase
 
     public function test_greeting_does_not_report_no_results_found(): void
     {
-        $this->fakeGeminiReply('Hello! How can I help you find a subject or syllabus today?');
+        $this->fakeGroqReply('Hello! How can I help you find a subject or syllabus today?');
 
         $response = $this->postJson('/api/chat', ['message' => 'Hello']);
 
@@ -124,14 +124,14 @@ class ChatbotControllerTest extends TestCase
         $response->assertJsonPath('query_type', 'greeting');
 
         Http::assertSent(function ($request) {
-            $text = $request['contents'][0]['parts'][0]['text'];
+            $text = collect($request['messages'])->last()['content'];
 
             return str_contains($text, 'Query type: greeting') && str_contains($text, 'no matching data found');
         });
     }
 
     /**
-     * Missing GEMINI_API_KEY — reply() must degrade to the fallback
+     * Missing GROQ_API_KEY — reply() must degrade to the fallback
      * answer instead of throwing/erroring, per Rico 2026-08-12
      * ("mag-fallback sa non-AI response... i-return ang raw search
      * results"). Still a 200, not a 503 — the frontend shouldn't need a
@@ -139,7 +139,7 @@ class ChatbotControllerTest extends TestCase
      */
     public function test_missing_api_key_falls_back_to_raw_search_results(): void
     {
-        config(['services.gemini.key' => null]);
+        config(['services.groq.key' => null]);
 
         $response = $this->postJson('/api/chat', ['message' => 'Ano ang COMP 016?']);
 
@@ -149,10 +149,10 @@ class ChatbotControllerTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_gemini_failure_falls_back_to_raw_search_results(): void
+    public function test_groq_failure_falls_back_to_raw_search_results(): void
     {
         Http::fake([
-            'generativelanguage.googleapis.com/*' => Http::response(['error' => 'boom'], 500),
+            'api.groq.com/*' => Http::response(['error' => 'boom'], 500),
         ]);
 
         $response = $this->postJson('/api/chat', ['message' => 'Ano ang COMP 016?']);
@@ -165,12 +165,12 @@ class ChatbotControllerTest extends TestCase
     /**
      * Security requirement (Rico, 2026-08-13): a Faculty account asking
      * about privileged system data (faculty accounts, change requests,
-     * system-wide upload activity) gets a fixed decline — and Gemini is
+     * system-wide upload activity) gets a fixed decline — and Groq is
      * never even called, so there's no LLM step that could be talked
      * into repeating data it was never given (setUp() already
      * actingAs()'s a faculty user, so no override needed here).
      */
-    public function test_faculty_role_gets_a_fixed_decline_for_privileged_data_no_gemini_call(): void
+    public function test_faculty_role_gets_a_fixed_decline_for_privileged_data_no_groq_call(): void
     {
         $response = $this->postJson('/api/chat', ['message' => 'How many faculty accounts are existing?']);
 
@@ -180,11 +180,11 @@ class ChatbotControllerTest extends TestCase
         Http::assertNothingSent();
     }
 
-    /** Same privileged question, but from an Admin — gets the real answer, and Gemini IS called this time. */
+    /** Same privileged question, but from an Admin — gets the real answer, and Groq IS called this time. */
     public function test_admin_role_gets_the_real_answer_for_privileged_data(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
-        $this->fakeGeminiReply('Mayroong 1 faculty account sa system.');
+        $this->fakeGroqReply('Mayroong 1 faculty account sa system.');
 
         $response = $this->postJson('/api/chat', ['message' => 'How many faculty accounts are existing?']);
 
@@ -200,7 +200,7 @@ class ChatbotControllerTest extends TestCase
      */
     public function test_asking_about_one_subject_does_not_flood_the_whole_program_catalog(): void
     {
-        $this->fakeGeminiReply('Meron pong available na syllabus para sa COMP 001.');
+        $this->fakeGroqReply('Meron pong available na syllabus para sa COMP 001.');
 
         $response = $this->postJson('/api/chat', ['message' => 'Can you send me the file of the COMP 001?']);
 
@@ -218,7 +218,7 @@ class ChatbotControllerTest extends TestCase
      */
     public function test_pronoun_follow_up_resolves_to_the_subject_named_in_recent_history(): void
     {
-        $this->fakeGeminiReply('COMP 001 is worth 3 credited units.');
+        $this->fakeGroqReply('COMP 001 is worth 3 credited units.');
 
         $response = $this->postJson('/api/chat', [
             'message' => 'Ilan ang credit units nito?',
@@ -237,12 +237,12 @@ class ChatbotControllerTest extends TestCase
 
     public function test_chat_endpoint_is_rate_limited_globally(): void
     {
-        $this->fakeGeminiReply('...');
+        $this->fakeGroqReply('...');
 
-        // The gemini-per-minute limiter (AppServiceProvider) allows 12
-        // requests/min across ALL users combined, not per user — so 12
+        // The groq-per-minute limiter (AppServiceProvider) allows 25
+        // requests/min across ALL users combined, not per user — so 25
         // calls from this one test user should already exhaust it.
-        for ($i = 0; $i < 12; $i++) {
+        for ($i = 0; $i < 25; $i++) {
             $this->postJson('/api/chat', ['message' => 'hello'])->assertOk();
         }
 

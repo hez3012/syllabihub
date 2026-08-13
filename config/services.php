@@ -22,15 +22,23 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
-    // "Sage" chatbot (App\Services\ChatbotService) — free-tier
-    // Google Gemini, per Rico 2026-08-12. Get a key at aistudio.google.com
-    // -> Get API key. Double-check GEMINI_MODEL is still a current model
-    // name there before going live; provider model names/versions change
-    // over time (gemini-2.5-flash and older were already 404ing for new
-    // accounts as of 2026-08-12) and this default may age out too.
+    // "Sage" chatbot (App\Services\ChatbotService) — LEGACY, replaced by
+    // Groq below as of 2026-08-13 (Gemini Flash Lite was hallucinating,
+    // not following the user's language, and getting grounded Q&A wrong
+    // even with matching context). Kept, not deleted, for rollback.
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+    ],
+
+    // "Sage" chatbot (App\Services\ChatbotService) — Groq, free tier,
+    // per Rico 2026-08-13. OpenAI-compatible REST API (no SDK). Get a key
+    // at console.groq.com/keys. Double-check GROQ_MODEL is still current
+    // there before going live; provider model names/versions change over
+    // time and this default may age out too.
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     ],
 
     'ses' => [

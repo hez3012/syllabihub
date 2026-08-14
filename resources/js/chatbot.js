@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleBtn = document.getElementById('chatbot-toggle');
     const closeBtn = document.getElementById('chatbot-close');
     const newChatBtn = document.getElementById('chatbot-new-chat');
+    const languageSelect = document.getElementById('chatbot-language');
     const form = document.getElementById('chatbot-form');
     const input = document.getElementById('chatbot-input');
     const messages = document.getElementById('chatbot-messages');
@@ -48,6 +49,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const userId = document.querySelector('meta[name="auth-user-id"]')?.content || 'guest';
     const STORAGE_KEY = `sage-chat-transcript-${userId}`;
 
+    // Reply-language preference (2026-08-13, per Rico/supervisor) — same
+    // per-user sessionStorage scoping/lifetime as the transcript above,
+    // for the same reason (a flat key would leak across accounts on a
+    // shared computer). Independent of "New chat" — clearing the
+    // conversation shouldn't silently reset a deliberate language choice.
+    const LANGUAGE_STORAGE_KEY = `sage-chat-language-${userId}`;
+    const VALID_LANGUAGES = ['english', 'tagalog', 'taglish'];
+
     // The one source of truth for the conversation — each entry is
     // {role, content, sources?, showLinks?}. `sources`/`showLinks` are
     // only ever set on assistant entries, and only used to replay the
@@ -56,6 +65,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // receives is always just {role, content} pairs derived from this.
     let transcript = loadTranscript();
     let sending = false;
+    let currentLanguage = loadLanguage();
+    languageSelect.value = currentLanguage;
+
+    languageSelect.addEventListener('change', function () {
+        currentLanguage = languageSelect.value;
+        saveLanguage(currentLanguage);
+    });
 
     function loadTranscript() {
         try {
@@ -73,6 +89,25 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             // Storage full/blocked (e.g. private browsing) — conversation
             // still works for this page view, it just won't carry over.
+        }
+    }
+
+    /** Defaults to English (per Rico) on first visit, an invalid/corrupted stored value, or blocked storage. */
+    function loadLanguage() {
+        try {
+            const stored = sessionStorage.getItem(LANGUAGE_STORAGE_KEY);
+
+            return VALID_LANGUAGES.includes(stored) ? stored : 'english';
+        } catch (error) {
+            return 'english';
+        }
+    }
+
+    function saveLanguage(language) {
+        try {
+            sessionStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+        } catch (error) {
+            // Storage full/blocked — the selection still works for this page view.
         }
     }
 
@@ -152,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Gemini's replies naturally come back with light markdown —
+     * Groq's replies naturally come back with light markdown —
      * "**term**" for emphasis, "- item" lines for lists (see
      * ChatbotService::SYSTEM_PROMPT, which never tells it not to). Left
      * as plain textContent, that shows up as literal asterisks and
@@ -166,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * any literal "<", "&", etc. in the reply is neutralized before the
      * two regexes below ever run. Those regexes then only ever
      * *introduce* the handful of fixed tags written directly in this
-     * function — there's no path from Gemini's text to an arbitrary tag
+     * function — there's no path from Groq's text to an arbitrary tag
      * or attribute landing in the DOM.
      */
     function formatAssistantHtml(text) {
@@ -216,22 +251,22 @@ document.addEventListener('DOMContentLoaded', function () {
             const files = result.syllabus_files || [];
 
             if (files.length === 0) {
-                // No file uploaded yet — link to the subject page instead
+                // No file uploaded yet — link to the course page instead
                 // of a download, clearly marked so it's not mistaken for one.
                 list.appendChild(buildResultLink(
-                    `/subjects/${result.subject_id}`,
-                    `${result.subject_code} — ${result.title}`,
+                    `/courses/${result.course_id}`,
+                    `${result.course_code} — ${result.title}`,
                     'bi bi-file-earmark-x text-muted'
                 ));
                 return;
             }
 
-            // One link per file — a subject with both a PDF and a DOCX
+            // One link per file — a course with both a PDF and a DOCX
             // syllabus gets two separate, individually downloadable rows.
             files.forEach(function (file) {
                 list.appendChild(buildResultLink(
                     `/syllabi/${file.id}/download`,
-                    `${result.subject_code} — ${result.title} (${file.file_type.toUpperCase()})`,
+                    `${result.course_code} — ${result.title} (${file.file_type.toUpperCase()})`,
                     'bi bi-download'
                 ));
             });
@@ -307,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Sage only shows the download/subject-page links when the message
+     * Sage only shows the download/course-page links when the message
      * actually asked for one — per Rico, 2026-08-13: having them appear
      * under every single reply regardless of what was asked was
      * cluttering the chat ("ang sakit sa mata"). The answer text alone
@@ -369,13 +404,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
-                body: JSON.stringify({ message, history: apiHistory() }),
+                body: JSON.stringify({ message, history: apiHistory(), language: currentLanguage }),
             });
 
             const data = await response.json();
             removeTypingIndicator();
 
-            // A 200 covers both a real Gemini answer AND the graceful
+            // A 200 covers both a real Groq answer AND the graceful
             // "AI unavailable, here's what I found" fallback (see
             // ChatbotService::fallbackResponse()) — both just render as
             // a normal assistant message. !response.ok here means an

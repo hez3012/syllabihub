@@ -126,6 +126,24 @@
     opacity: 1;
 }
 
+/* Sage reply-language selector (2026-08-13) — small, fits the same blue
+   header as the icon buttons beside it rather than looking like a
+   default OS-styled <select> dropped into a colored bar. */
+.chatbot-language-select {
+    background: rgba(255, 255, 255, .15);
+    border: 1px solid rgba(255, 255, 255, .4);
+    border-radius: 4px;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .1rem .3rem;
+    line-height: 1.4;
+}
+
+.chatbot-language-select option {
+    color: #212529;
+}
+
 .chatbot-messages {
     flex-grow: 1;
     overflow-y: auto;

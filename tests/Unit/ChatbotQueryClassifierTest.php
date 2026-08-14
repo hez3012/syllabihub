@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  *
  * A few cases are intentionally NOT the "ideal" category a human would
  * pick (documented inline where that happens) — those are acceptable
- * because ChatbotRetrievalService::retrieve() routes SUBJECT_LOOKUP,
+ * because ChatbotRetrievalService::retrieve() routes COURSE_LOOKUP,
  * SYLLABUS_CONTENT, and GENERAL_SEARCH to the exact same textSearch()
  * method, so a soft miss between those three still retrieves the same
  * data either way. A miss into a genuinely different retrieval strategy
@@ -44,16 +44,16 @@ class ChatbotQueryClassifierTest extends TestCase
     {
         return [
             // -- A. Subject lookup (direct search) — must handle perfectly --
-            'A1' => ['Ano ang COMP 016?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A2' => ['What is INTE 303?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A3' => ['Ano ang buong pangalan ng COMP 008?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A4' => ['Ano ang ibig sabihin ng ELEC IT-E1?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A5' => ['Mayroon bang subject na COMP 025?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A6' => ['Anong subject code ng Web Development?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A7' => ['Anong subject code ng Capstone Project 1?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A8' => ['Describe COMP 010', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A9' => ['Tell me about Information Management', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'A10' => ['Ano ang GEED 032?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'A1' => ['Ano ang COMP 016?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A2' => ['What is INTE 303?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A3' => ['Ano ang buong pangalan ng COMP 008?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A4' => ['Ano ang ibig sabihin ng ELEC IT-E1?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A5' => ['Mayroon bang subject na COMP 025?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A6' => ['Anong subject code ng Web Development?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A7' => ['Anong subject code ng Capstone Project 1?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A8' => ['Describe COMP 010', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A9' => ['Tell me about Information Management', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'A10' => ['Ano ang GEED 032?', ChatbotQueryClassifier::COURSE_LOOKUP],
 
             // -- B. Syllabus availability — must handle perfectly --
             'B11' => ['Meron bang syllabus ang COMP 016?', ChatbotQueryClassifier::SYLLABUS_AVAILABILITY],
@@ -107,7 +107,7 @@ class ChatbotQueryClassifierTest extends TestCase
             'E49' => ['Ilan ang total units sa First Year?', ChatbotQueryClassifier::YEAR_SEMESTER],
             'E50' => ['Ano-anong subjects ang 5 tuition hours?', ChatbotQueryClassifier::STATS],
             'E51' => ['Ilang lecture hours ang INTE 404 (Practicum)?', ChatbotQueryClassifier::STATS],
-            'E52' => ['Aling subjects ang may laboratory component?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
+            'E52' => ['Aling subjects ang may laboratory component?', ChatbotQueryClassifier::COURSE_CATEGORY],
             'E53' => ['Ilan ang lab hours ng COMP 001?', ChatbotQueryClassifier::STATS],
             'E54' => ['Ano ang pinakamataas na units na subject?', ChatbotQueryClassifier::STATS],
             'E55' => ['Ilan ang credited units ng Practicum?', ChatbotQueryClassifier::STATS],
@@ -130,18 +130,18 @@ class ChatbotQueryClassifierTest extends TestCase
             'F70' => ['Anong program ang may mas maraming lab subjects?', ChatbotQueryClassifier::PROGRAM_COMPARISON],
 
             // -- G. Subject type/category queries — should handle well --
-            'G71' => ['Ano-anong subjects ang GEED (General Education)?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
+            'G71' => ['Ano-anong subjects ang GEED (General Education)?', ChatbotQueryClassifier::COURSE_CATEGORY],
             'G72' => ['Ilan ang programming-related subjects sa BSIT?', ChatbotQueryClassifier::STATS],
-            'G73' => ['Ano-anong subjects ang may lab?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'G74' => ['Lahat ba ng COMP subjects ay IT-specific?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'G75' => ['Ano-anong elective subjects ang meron?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'G76' => ['Ano ang mga NSTP subjects?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'G77' => ['Ano-anong PATHFIT subjects ang meron?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
+            'G73' => ['Ano-anong subjects ang may lab?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'G74' => ['Lahat ba ng COMP subjects ay IT-specific?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'G75' => ['Ano-anong elective subjects ang meron?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'G76' => ['Ano ang mga NSTP subjects?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'G77' => ['Ano-anong PATHFIT subjects ang meron?', ChatbotQueryClassifier::COURSE_CATEGORY],
             'G78' => ['Ilan ang major subjects vs GE subjects sa BSIT?', ChatbotQueryClassifier::PROGRAM_COMPARISON],
             'G79' => ['Ano-anong INTE subjects ang meron?', ChatbotQueryClassifier::GENERAL_SEARCH],
             'G80' => ['May accounting subject ba sa BSIT?', ChatbotQueryClassifier::STATS],
             'G81' => ['Ilan ang free elective slots sa BSIT?', ChatbotQueryClassifier::STATS],
-            'G82' => ['Ano-anong subjects ang purely lecture, walang lab?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
+            'G82' => ['Ano-anong subjects ang purely lecture, walang lab?', ChatbotQueryClassifier::COURSE_CATEGORY],
 
             // -- H. Syllabus content queries — should handle well --
             'H83' => ['Ano ang topics na tinatalakay sa COMP 016 syllabus?', ChatbotQueryClassifier::SYLLABUS_CONTENT],
@@ -192,7 +192,7 @@ class ChatbotQueryClassifierTest extends TestCase
             'K116b' => ['Thank you', ChatbotQueryClassifier::THANKS],
             'K117' => ['Ano ang weather ngayon?', ChatbotQueryClassifier::OUT_OF_SCOPE],
             'K118' => ['Gawa ka ng essay about AI', ChatbotQueryClassifier::OUT_OF_SCOPE],
-            'K119' => ['COMP016', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'K119' => ['COMP016', ChatbotQueryClassifier::COURSE_LOOKUP],
             'K120' => ['web dev', ChatbotQueryClassifier::GENERAL_SEARCH],
             'K121' => ['capstone', ChatbotQueryClassifier::GENERAL_SEARCH],
             // K122/K123 updated 2026-08-13 (v2 doc §13 "Ambiguous subject
@@ -213,7 +213,7 @@ class ChatbotQueryClassifierTest extends TestCase
             // from general off-topic OUT_OF_SCOPE, so it can point to an
             // admin instead of just declining.
             'K127' => ['Delete my account', ChatbotQueryClassifier::IMPOSSIBLE_ACTION],
-            'K128' => ['COMP 016 ba o COMP016?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'K128' => ['COMP 016 ba o COMP016?', ChatbotQueryClassifier::COURSE_LOOKUP],
             'K129' => ['networking', ChatbotQueryClassifier::GENERAL_SEARCH],
             'K130' => ['rizal', ChatbotQueryClassifier::GENERAL_SEARCH],
 
@@ -225,9 +225,9 @@ class ChatbotQueryClassifierTest extends TestCase
             'L135' => ['Kung nag-shift ako from DIT to BSIT, anong subjects ang ma-credit?', ChatbotQueryClassifier::PROGRAM_COMPARISON],
             'L136' => ['Ano ang typical load per semester?', ChatbotQueryClassifier::YEAR_SEMESTER],
             'L137' => ['Gaano katagal bago matapos ang BSIT?', ChatbotQueryClassifier::GENERAL_SEARCH],
-            'L138' => ['Ano ang mga heavy subjects na kailangan ko paghandaan?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'L138' => ['Ano ang mga heavy subjects na kailangan ko paghandaan?', ChatbotQueryClassifier::COURSE_LOOKUP],
             'L139' => ['May summer class ba sa 1st year o 2nd year?', ChatbotQueryClassifier::YEAR_SEMESTER],
-            'L140' => ['Ano ang subjects na kailangan ko para maging eligible sa OJT?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'L140' => ['Ano ang subjects na kailangan ko para maging eligible sa OJT?', ChatbotQueryClassifier::COURSE_LOOKUP],
 
             // -- Regressions found after the 140-question doc (2026-08-13) --
             // "how many" is the plain-English equivalent of "ilan", but
@@ -329,8 +329,8 @@ class ChatbotQueryClassifierTest extends TestCase
 
             // Rico's explicit sample test set (2026-08-13) not already covered above
             'S1' => ['Hello', ChatbotQueryClassifier::GREETING],
-            'S2' => ['Ano ang COMP 016?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
-            'S3' => ['COMP016', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'S2' => ['Ano ang COMP 016?', ChatbotQueryClassifier::COURSE_LOOKUP],
+            'S3' => ['COMP016', ChatbotQueryClassifier::COURSE_LOOKUP],
             'S4' => ['web dev', ChatbotQueryClassifier::GENERAL_SEARCH],
             'S5' => ['Ano prereq ng Web Development?', ChatbotQueryClassifier::PREREQUISITE],
             'S6' => ['Aling subjects wala pang syllabus?', ChatbotQueryClassifier::SYLLABUS_AVAILABILITY],
@@ -359,12 +359,12 @@ class ChatbotQueryClassifierTest extends TestCase
             // Live-tested by Rico, 2026-08-13 (fifth round): "list by
             // any prefix" had no capability at all — see
             // ChatbotRetrievalServiceTest for the retrieval-level fix.
-            'Y1' => ['Can you tell me all the subjects that starts with the course code "COMP"?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'Y2' => ['ALL COMP subject code?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
-            'Y3' => ['Ano-anong subjects ang nagsisimula sa DIT?', ChatbotQueryClassifier::SUBJECT_CATEGORY],
+            'Y1' => ['Can you tell me all the subjects that starts with the course code "COMP"?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'Y2' => ['ALL COMP subject code?', ChatbotQueryClassifier::COURSE_CATEGORY],
+            'Y3' => ['Ano-anong subjects ang nagsisimula sa DIT?', ChatbotQueryClassifier::COURSE_CATEGORY],
             // Must NOT be caught by the new "X subject code" phrasing —
             // this is a specific-subject lookup, a different question.
-            'Y4' => ['Anong subject code ng Web Development?', ChatbotQueryClassifier::SUBJECT_LOOKUP],
+            'Y4' => ['Anong subject code ng Web Development?', ChatbotQueryClassifier::COURSE_LOOKUP],
 
             // Live-tested by Rico, 2026-08-13 (sixth round): a bare
             // "subjects in [program]" — no count/year/comparison word —

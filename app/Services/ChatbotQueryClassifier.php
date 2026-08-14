@@ -18,10 +18,18 @@ namespace App\Services;
  * classify() checks rules top-to-bottom, first match wins. Order is
  * deliberate: more specific intents are checked before broader ones,
  * because a single message can trigger several — e.g. "Ano ang prereq
- * ng COMP 003?" contains BOTH a subject-code-shaped token and a prereq
+ * ng COMP 003?" contains BOTH a course-code-shaped token and a prereq
  * keyword. Prereq must win there, since it needs a join/chain query, not
- * a plain lookup — so PREREQUISITE is checked well before SUBJECT_LOOKUP
+ * a plain lookup — so PREREQUISITE is checked well before COURSE_LOOKUP
  * (whose code-pattern check would otherwise catch it first).
+ *
+ * "Course" terminology (2026-08-13, per Rico/supervisor — was "Subject"
+ * before): every pattern below that matches literal words a real user
+ * might type still recognizes "subject"/"subjects" as a synonym
+ * alongside "course"/"courses" — faculty who are used to the old term
+ * shouldn't get worse results just for saying it out of habit. Only the
+ * internal identifiers (constants, comments describing our own schema)
+ * were renamed outright.
  *
  * The v2 categories added at the top of the cascade (adversarial,
  * greeting/thanks, gibberish, vague/ambiguous, multi-question) are
@@ -50,12 +58,12 @@ class ChatbotQueryClassifier
     public const YEAR_SEMESTER = 'year_semester';
     public const STATS = 'stats';
     public const PROGRAM_COMPARISON = 'program_comparison';
-    public const SUBJECT_CATEGORY = 'subject_category';
+    public const COURSE_CATEGORY = 'course_category';
     public const SYSTEM_HELP = 'system_help';
-    public const SUBJECT_LOOKUP = 'subject_lookup';
+    public const COURSE_LOOKUP = 'course_lookup';
     public const GENERAL_SEARCH = 'general_search';
 
-    /** Subject codes in this curriculum: a short letter prefix + a number, space optional ("COMP 016", "COMP016", "DIT-101"). */
+    /** Course codes in this curriculum: a short letter prefix + a number, space optional ("COMP 016", "COMP016", "DIT-101"). */
     private const CODE_PATTERN = '/\b[A-Za-z]{2,6}\s?-?\s?\d{2,4}\b/';
 
     /**
@@ -64,14 +72,14 @@ class ChatbotQueryClassifier
      * accidentally swallows a longer, clearer question that happens to
      * contain one of these words. Two different flavors share this one
      * bucket (Rico, 2026-08-13, didn't ask for them to be split): plain
-     * vague words ("subjects", "help", "?") that identify nothing to
+     * vague words ("courses", "help", "?") that identify nothing to
      * search for at all, and real terms ("comp", "programming") that
-     * match several real subjects — ChatbotRetrievalService/the system
+     * match several real courses — ChatbotRetrievalService/the system
      * prompt tell these apart by whether the resulting search actually
      * found anything, not by a different classifier type.
      */
     private const VAGUE_OR_AMBIGUOUS_TERMS = [
-        'subjects', 'subject', 'syllabus', 'syllabi', 'info', 'information', 'help',
+        'courses', 'course', 'subjects', 'subject', 'syllabus', 'syllabi', 'info', 'information', 'help',
         'show me everything', 'everything', 'all', 'list', '?', 'hmm', 'ano', 'ewan',
         'check', 'search',
         'comp', 'programming', 'elective', 'project', 'security', 'integration', 'management',
@@ -153,7 +161,7 @@ class ChatbotQueryClassifier
         // "prereq" keyword) and only the prereq half would ever get
         // answered. Two signals: an actual second "?", or a connector
         // ("at"/"and") joining either two distinct question-cue words
-        // (ano/ilan/sino/...) or two distinct subject-code-shaped
+        // (ano/ilan/sino/...) or two distinct course-code-shaped
         // tokens — both mean two things are really being asked, not one
         // question with a compound object ("May midterm at final exam
         // ba...?" has only ONE question cue, "may", so it stays put).
@@ -186,7 +194,7 @@ class ChatbotQueryClassifier
         // own comparison-signal requirement already protects it, but
         // this is the more specific, correct home for it either way).
         if ($this->matchesAny($lower, [
-            'stressed', 'stress ko', 'nakakapagod', 'huhu', 'i hate this subject', 'ayoko na',
+            'stressed', 'stress ko', 'nakakapagod', 'huhu', 'i hate this course', 'i hate this subject', 'ayoko na',
             "don't know what course", 'hindi ko alam kung anong course', 'should i shift',
             'good career', 'maganda ba mag-it', 'worth it ba', 'is it worth it', 'nahihirapan ako',
         ]) || preg_match('/\bang hirap\b.{0,20}huhu|\bbagsak ako\b/i', $trimmed)) {
@@ -196,9 +204,9 @@ class ChatbotQueryClassifier
         // Direct commands for actions Sage can't perform via chat —
         // checked before PREREQUISITE/SYSTEM_HELP so e.g. "Delete the
         // syllabus of COMP 016" (which contains a real code) doesn't
-        // fall through to SUBJECT_LOOKUP and get treated as an ordinary
-        // "tell me about this subject" question.
-        if (preg_match('/\bdelete my account\b|\bdelete (the )?account\b|\bchange my (password|role)\b|\bupload this file for me\b|\bcreate a new (subject|user|account)\b|\badd a (new )?user\b|\bgive me admin\b|\bdelete the syllabus\b|\bedit the subject\b|\bsend an email\b|\bbook a classroom\b|\benroll me\b/i', $trimmed)) {
+        // fall through to COURSE_LOOKUP and get treated as an ordinary
+        // "tell me about this course" question.
+        if (preg_match('/\bdelete my account\b|\bdelete (the )?account\b|\bchange my (password|role)\b|\bupload this file for me\b|\bcreate a new (subject|course|user|account)\b|\badd a (new )?user\b|\bgive me admin\b|\bdelete the syllabus\b|\bedit the (subject|course)\b|\bsend an email\b|\bbook a classroom\b|\benroll me\b/i', $trimmed)) {
             return self::IMPOSSIBLE_ACTION;
         }
 
@@ -240,12 +248,12 @@ class ChatbotQueryClassifier
         // enough signal in this domain that it shouldn't lose to a
         // broader keyword a how-to question happens to also contain
         // (e.g. "Paano mag-download ng syllabus?" also has "syllabus"
-        // and "download" in it, but it's asking HOW, not WHICH subjects
+        // and "download" in it, but it's asking HOW, not WHICH courses
         // have a file — same for "Paano mag-filter... by year level?").
         // Self-identity ("What is Sage?", "Who are you?", "Sino ka?")
         // added 2026-08-13 — without this, "What is Sage?" fell all the
-        // way to SUBJECT_LOOKUP (its "what is" phrase is also that
-        // category's own trigger below), which tried to find a SUBJECT
+        // way to COURSE_LOOKUP (its "what is" phrase is also that
+        // category's own trigger below), which tried to find a COURSE
         // named "Sage" in the database, found nothing, and gave the
         // strict-grounding "wala akong nakita" refusal — wrong for a
         // question the assistant should always be able to answer about
@@ -265,13 +273,13 @@ class ChatbotQueryClassifier
         }
 
         // "curriculum 2022-2023" / "curriculum year 2023-2024" / "AY
-        // 2022-2023" — added 2026-08-13 (Rico): asking for subjects/
+        // 2022-2023" — added 2026-08-13 (Rico): asking for courses/
         // syllabi under a specific curriculum year genuinely has no
         // data anywhere without this — curriculum_year is a real column
         // on syllabi, but nothing was checking for it, so "Can you give
-        // me all the subjects that are in Curriculum 2022-2023?" fell
+        // me all the courses that are in Curriculum 2022-2023?" fell
         // through everything to GENERAL_SEARCH and text-searched the
-        // literal words (finding nothing, since no subject title/code
+        // literal words (finding nothing, since no course title/code
         // contains "curriculum" or a bare year number).
         if (preg_match('/curriculum\s*(year)?\s*\d{4}|school\s?year\s*\d{4}|academic\s?year\s*\d{4}|\bAY\s?\d{4}\b/i', $trimmed)) {
             return self::SYLLABUS_AVAILABILITY;
@@ -283,27 +291,27 @@ class ChatbotQueryClassifier
             return self::SYLLABUS_AVAILABILITY;
         }
 
-        // "...(year|sem|subjects?)" — not just "year|sem", added
+        // "...(year|sem|courses?)" — not just "year|sem", added
         // 2026-08-13 alongside the matching parseScope() fix in
         // ChatbotRetrievalService (that fix alone wasn't enough — a
         // message needs to classify as YEAR_SEMESTER in the first place
         // before parseScope() ever runs on it). "What about overall 1st
-        // subjects?" has no "year"/"sem" at all, only "1st subjects".
+        // courses?" has no "year"/"sem" at all, only "1st courses".
         if ($this->matchesAny($lower, [
             'year', 'semester', ' sem ', 'sem?', 'sem.', 'taon', 'graduate', 'summer',
-        ]) || preg_match('/\b(1st|2nd|3rd|4th|first|second|third|fourth)\s?(year|sem|subjects?)/i', $trimmed)) {
+        ]) || preg_match('/\b(1st|2nd|3rd|4th|first|second|third|fourth)\s?(year|sem|courses?|subjects?)/i', $trimmed)) {
             return self::YEAR_SEMESTER;
         }
 
         // Checked before STATS: a message naming both programs (or an
         // explicit comparison word) is inherently a comparison even if
-        // it also asks for a count ("Ilan ang total subjects sa BSIT vs
+        // it also asks for a count ("Ilan ang total courses sa BSIT vs
         // DIT?") — STATS's scope parsing only handles ONE program filter
         // at a time, so it would silently drop half the question.
         // Requires an actual program/curriculum mention alongside the
         // comparison word, though — "Ilan ang lecture hours VS lab hours
         // ng COMP 006?" has a bare "vs" too, but it's comparing two
-        // numbers on ONE subject, not two programs.
+        // numbers on ONE course, not two programs.
         $mentionsProgram = $this->matchesAny($lower, ['bsit', 'dit', 'program', 'curriculum']);
         $hasComparisonSignal = (str_contains($lower, 'bsit') && str_contains($lower, 'dit'))
             || $this->matchesAny($lower, ['compare', 'comparison', 'pagkakaiba', 'kaibahan', ' vs ', 'versus'])
@@ -322,14 +330,14 @@ class ChatbotQueryClassifier
         // "how many" added 2026-08-13 — the original 140-question test
         // doc only ever phrased counts as "ilan", so the all-English
         // equivalent was never actually exercised. Without it, "How many
-        // subjects are existing sa system?" fell all the way through to
+        // courses are existing sa system?" fell all the way through to
         // GENERAL_SEARCH, which text-searched the literal words instead
         // of counting anything — a real bug, not just an untested gap:
         // it answered with a wrong, coincidental count instead of the
         // true total.
         //
         // "number of" added 2026-08-13 (second round, live session) —
-        // same class of gap: "can you tell me the number of subjects
+        // same class of gap: "can you tell me the number of courses
         // existed in the system?" is a completely natural way to ask
         // for a count, but had neither "ilan" nor "how many" in it, so
         // it fell all the way to GENERAL_SEARCH too — same wrong-
@@ -343,11 +351,11 @@ class ChatbotQueryClassifier
 
         // geed/nstp/pathfit guarded against a code pattern also being
         // present — "Ano ang GEED 032?" is a specific-code lookup
-        // (SUBJECT_LOOKUP), not "what are the GEED subjects" in general;
+        // (COURSE_LOOKUP), not "what are the GEED courses" in general;
         // the other category signals below don't have that ambiguity.
         //
-        // "starts with X" / "X subject code" / "all X subjects" added
-        // 2026-08-13 — "Can you tell me all the subjects that starts
+        // "starts with X" / "X course code" / "all X courses" added
+        // 2026-08-13 — "Can you tell me all the courses that starts
         // with the course code 'COMP'?" had no real capability behind
         // it (only GEED/NSTP/PATHFIT were special-cased), so it fell to
         // GENERAL_SEARCH and answered with a single stale
@@ -355,35 +363,35 @@ class ChatbotQueryClassifier
         // doesn't have DB access to validate the actual prefix, so it
         // only recognizes the PHRASING here — ChatbotRetrievalService::
         // findMentionedCodePrefix() checks the mentioned word against
-        // real subject_code prefixes before actually filtering by it.
+        // real course_code prefixes before actually filtering by it.
         if ((!preg_match(self::CODE_PATTERN, $trimmed) && $this->matchesAny($lower, ['geed', 'nstp', 'pathfit']))
             || $this->matchesAny($lower, [
-                'elective', 'major subject', 'ge subject', 'general education', 'it-specific',
-                'accounting subject', 'purely lecture', 'walang lab', 'may lab', 'laboratory component',
+                'elective', 'major course', 'major subject', 'ge course', 'ge subject', 'general education', 'it-specific',
+                'accounting course', 'accounting subject', 'purely lecture', 'walang lab', 'may lab', 'laboratory component',
             ])
-            || preg_match('/\bstarts? with\b|\bstarting with\b|\bnagsisimula sa\b|\ball\s+[a-z]{2,6}\s+subjects?\b/i', $trimmed)) {
-            return self::SUBJECT_CATEGORY;
+            || preg_match('/\bstarts? with\b|\bstarting with\b|\bnagsisimula sa\b|\ball\s+[a-z]{2,6}\s+(courses?|subjects?)\b/i', $trimmed)) {
+            return self::COURSE_CATEGORY;
         }
 
         if (preg_match(self::CODE_PATTERN, $trimmed)
-            || $this->matchesAny($lower, ['ano ang', 'ano ba ang', 'what is', 'tell me about', 'describe', 'anong subject code'])) {
-            return self::SUBJECT_LOOKUP;
+            || $this->matchesAny($lower, ['ano ang', 'ano ba ang', 'what is', 'tell me about', 'describe', 'anong course code', 'anong subject code'])) {
+            return self::COURSE_LOOKUP;
         }
 
-        // Bare "subjects in [program]" — a plain listing request, no
+        // Bare "courses in [program]" — a plain listing request, no
         // count word (would already be STATS), no year/semester word
         // (would already be YEAR_SEMESTER), no comparison signal (would
         // already be PROGRAM_COMPARISON). Real bug (Rico, 2026-08-13):
-        // "What about the subjects in DIT program?" had no home at all,
+        // "What about the courses in DIT program?" had no home at all,
         // so it fell to GENERAL_SEARCH — whose keywordFallback()
         // deliberately skips "dit" (a shared code prefix, same
         // protection that already exists for "comp") and instead
         // coincidentally FULLTEXT-matched the word "program" as a
-        // prefix of "Programming" in three unrelated BSIT subjects.
+        // prefix of "Programming" in three unrelated BSIT courses.
         // Routed to YEAR_SEMESTER because its parseScope()/applyScope()
         // already filter by program correctly — this just gets messages
         // like this one there in the first place.
-        if (preg_match('/\bbsit\b|\bdit\b/i', $trimmed) && preg_match('/\bsubjects?\b/i', $trimmed)) {
+        if (preg_match('/\bbsit\b|\bdit\b/i', $trimmed) && preg_match('/\b(courses?|subjects?)\b/i', $trimmed)) {
             return self::YEAR_SEMESTER;
         }
 

@@ -28,7 +28,7 @@
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a href="{{ route('subjects.index') }}" class="nav-link {{ request()->routeIs('subjects.index') ? 'active' : 'link-dark' }}">Browse Subjects</a>
+                    <a href="{{ route('courses.index') }}" class="nav-link {{ request()->routeIs('courses.index') ? 'active' : 'link-dark' }}">Browse Courses</a>
                 </li>
                 @auth
                     <li class="nav-item">
@@ -85,6 +85,17 @@
                 <div class="chatbot-panel-header">
                     <span><i class="bi bi-stars"></i> Sage</span>
                     <div class="chatbot-panel-header-actions">
+                        {{-- Sage's reply-language preference (2026-08-13, per Rico/
+                             supervisor) — English/Tagalog/Taglish, defaults to English.
+                             Controls only what language Sage REPLIES in; it still
+                             understands a message typed in any of the three regardless
+                             of this selection. Persisted in sessionStorage per user, same
+                             lifetime as the conversation itself — see chatbot.js. --}}
+                        <select id="chatbot-language" class="chatbot-language-select" title="Sage's reply language" aria-label="Sage's reply language">
+                            <option value="english" selected>EN</option>
+                            <option value="tagalog">TL</option>
+                            <option value="taglish">Taglish</option>
+                        </select>
                         <button type="button" id="chatbot-new-chat" class="btn-icon" title="New chat" aria-label="Start a new chat">
                             <i class="bi bi-plus-circle"></i>
                         </button>
@@ -94,7 +105,7 @@
 
                 <div id="chatbot-messages" class="chatbot-messages">
                     <div class="chatbot-msg chatbot-msg-assistant chatbot-msg-in">
-                        <div class="chatbot-bubble">Hi, I'm Sage! I can help you find a subject or syllabus — for example, try asking "Does COMP 016 have a syllabus available?"</div>
+                        <div class="chatbot-bubble">Hi, I'm Sage! I can help you find a course or syllabus — for example, try asking "Does COMP 016 have a syllabus available?"</div>
                     </div>
                 </div>
 

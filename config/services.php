@@ -22,13 +22,18 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
-    // "Sage" chatbot (App\Services\ChatbotService) — LEGACY, replaced by
-    // Groq below as of 2026-08-13 (Gemini Flash Lite was hallucinating,
-    // not following the user's language, and getting grounded Q&A wrong
-    // even with matching context). Kept, not deleted, for rollback.
+    // "Sage" chatbot (App\Services\ChatbotService) — Groq's automatic
+    // FALLBACK as of 2026-08-13, per Rico (see ChatbotService::
+    // tryGeminiFallback()), not the primary model — Groq is. Originally
+    // WAS the primary model until 2026-08-13 (Gemini Flash Lite was
+    // hallucinating, not following the user's language, and getting
+    // grounded Q&A wrong even with matching context), which is also why
+    // Rico didn't want that Lite tier again for this fallback role — see
+    // .env's own comment for which model names are actually still live
+    // on this account.
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.6-flash'),
     ],
 
     // "Sage" chatbot (App\Services\ChatbotService) — Groq, free tier,

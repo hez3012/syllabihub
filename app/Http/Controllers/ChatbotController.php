@@ -34,10 +34,21 @@ class ChatbotController extends Controller
             'history' => ['sometimes', 'array', 'max:20'],
             'history.*.role' => ['required_with:history', 'in:user,assistant'],
             'history.*.content' => ['required_with:history', 'string', 'max:2000'],
+            // Sage's reply-language preference (2026-08-13, per Rico/
+            // supervisor) — English/Tagalog/Taglish, defaults to English
+            // when omitted. Controls only what LANGUAGE Sage replies in;
+            // it still understands a message in any of the three
+            // regardless of this setting — see ChatbotService::SYSTEM_PROMPT.
+            'language' => ['sometimes', 'string', 'in:english,tagalog,taglish'],
         ]);
 
         return response()->json(
-            $this->chatbot->reply($validated['message'], $validated['history'] ?? [], $request->user()->role)
+            $this->chatbot->reply(
+                $validated['message'],
+                $validated['history'] ?? [],
+                $request->user()->role,
+                $validated['language'] ?? 'english'
+            )
         );
     }
 }

@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Browse Subjects — SyllabiHub')
+@section('title', 'Browse Courses — SyllabiHub')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Browse Subjects</h1>
+        <h1 class="h3 mb-0">Browse Courses</h1>
         @auth
             @if (auth()->user()->isAdmin() || auth()->user()->isFaculty() || auth()->user()->isIntern())
-                <a href="{{ route('subjects.create') }}" class="btn btn-primary btn-sm">+ Add Subject</a>
+                <a href="{{ route('courses.create') }}" class="btn btn-primary btn-sm">+ Add Course</a>
             @endif
         @endauth
     </div>
 
-    <form method="GET" action="{{ route('subjects.index') }}" class="row g-2 align-items-end mb-4">
+    <form method="GET" action="{{ route('courses.index') }}" class="row g-2 align-items-end mb-4">
         <div class="col-auto">
             <label class="form-label">Program</label>
             <select name="program" class="form-select">
@@ -56,15 +56,15 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($subjects as $subject)
+            @forelse ($courses as $course)
                 <tr>
-                    <td>{{ $subject->subject_code }}</td>
-                    <td><a href="{{ route('subjects.show', $subject) }}">{{ $subject->title }}</a></td>
-                    <td>{{ $subject->program?->code }}</td>
-                    <td>{{ $subject->yearLevelLabel() }}</td>
-                    <td>{{ $subject->semesterLabel() }}</td>
+                    <td>{{ $course->course_code }}</td>
+                    <td><a href="{{ route('courses.show', $course) }}">{{ $course->title }}</a></td>
+                    <td>{{ $course->program?->code }}</td>
+                    <td>{{ $course->yearLevelLabel() }}</td>
+                    <td>{{ $course->semesterLabel() }}</td>
                     <td>
-                        @if ($subject->latestSyllabus)
+                        @if ($course->latestSyllabus)
                             <span class="badge bg-success">Yes</span>
                         @else
                             <span class="badge bg-secondary">No</span>
@@ -72,10 +72,10 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center text-muted">No matching subjects found.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted">No matching courses found.</td></tr>
             @endforelse
         </tbody>
     </table>
 
-    {{ $subjects->links() }}
+    {{ $courses->links() }}
 @endsection

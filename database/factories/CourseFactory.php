@@ -2,22 +2,22 @@
 
 namespace Database\Factories;
 
+use App\Models\Course;
 use App\Models\Program;
-use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Subject>
+ * @extends Factory<Course>
  */
-class SubjectFactory extends Factory
+class CourseFactory extends Factory
 {
-    protected $model = Subject::class;
+    protected $model = Course::class;
 
     public function definition(): array
     {
         return [
             'program_id' => Program::factory(),
-            'subject_code' => strtoupper(fake()->unique()->bothify('TST ###')),
+            'course_code' => strtoupper(fake()->unique()->bothify('TST ###')),
             'title' => fake()->sentence(3),
             'year_level' => fake()->numberBetween(1, 4),
             'semester' => fake()->randomElement(['1st', '2nd', 'summer']),

@@ -9,8 +9,8 @@ use Illuminate\View\View;
 
 /**
  * Admin/intern tool for creating faculty login accounts. Replaces the old
- * "assign subjects to faculty" feature (dropped — faculty now create/own
- * their own subjects directly, see SubjectController/SubjectChangeRequestController).
+ * "assign courses to faculty" feature (dropped — faculty now create/own
+ * their own courses directly, see CourseController/CourseChangeRequestController).
  *
  * Emailing the credentials to the actual faculty member is a manual step
  * outside this app (per Rico: dev team handles it, real emails collected
@@ -22,7 +22,7 @@ class FacultyAccountController extends Controller
     {
         $faculty = User::query()
             ->where('role', 'faculty')
-            ->withCount('createdSubjects')
+            ->withCount('createdCourses')
             ->orderBy('name')
             ->get();
 

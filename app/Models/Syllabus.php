@@ -13,14 +13,14 @@ class Syllabus extends Model
     protected $table = 'syllabi';
 
     protected $fillable = [
-        'subject_id', 'file_path', 'file_type', 'original_filename',
+        'course_id', 'file_path', 'file_type', 'original_filename',
         'raw_text', 'curriculum_year',
         'status', 'uploaded_by',
     ];
 
-    public function subject()
+    public function course()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Course::class);
     }
 
     public function uploader()

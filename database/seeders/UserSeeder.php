@@ -13,9 +13,9 @@ use Illuminate\Database\Seeder;
  * DO NOT reuse these outside local development, and delete/rotate before
  * anything resembling a real deployment.
  *
- * Subjects are no longer assigned to faculty via pivot — faculty create
- * their own subjects directly (see SubjectController::store). The test
- * faculty account here starts with no subjects until it (or you, logged
+ * Courses are no longer assigned to faculty via pivot — faculty create
+ * their own courses directly (see CourseController::store). The test
+ * faculty account here starts with no courses until it (or you, logged
  * in as it) creates some.
  *
  * Run standalone: php artisan db:seed --class=UserSeeder

@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Subject extends Model
+class Course extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'program_id', 'created_by', 'subject_code', 'title',
+        'program_id', 'created_by', 'course_code', 'title',
         'year_level', 'semester',
         'prerequisite', 'corequisite',
         'lecture_hours', 'lab_hours',
@@ -33,7 +33,7 @@ class Subject extends Model
         return $this->hasOne(Syllabus::class)->latestOfMany();
     }
 
-    /** Who created this subject. Null = seeded/legacy — no faculty owner. */
+    /** Who created this course. Null = seeded/legacy — no faculty owner. */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -41,10 +41,10 @@ class Subject extends Model
 
     public function changeRequests()
     {
-        return $this->hasMany(SubjectChangeRequest::class);
+        return $this->hasMany(CourseChangeRequest::class);
     }
 
-    /** Whether this subject has a not-yet-decided edit/delete request. */
+    /** Whether this course has a not-yet-decided edit/delete request. */
     public function hasPendingChangeRequest(): bool
     {
         return $this->changeRequests()->where('status', 'pending')->exists();

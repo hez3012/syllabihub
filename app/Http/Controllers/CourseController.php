@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\Program;
-use App\Models\Subject;
 use App\Services\SyllabusFileService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -12,25 +12,25 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Public: browse subjects (filterable list) and subject detail — no auth
+ * Public: browse courses (filterable list) and course detail — no auth
  * required, matches "Public Visitor: view/search/download only".
  *
  * create()/store() are also reachable by admin/faculty/intern (see
- * routes/web.php) — any of them can add a new subject directly, no
+ * routes/web.php) — any of them can add a new course directly, no
  * approval needed. edit()/update()/destroy() are admin/intern ONLY and
- * unconditional (they can touch any subject, including ones faculty
- * created). Faculty never edits/deletes directly, even their own subjects
- * — that goes through SubjectChangeRequestController instead (hold until
+ * unconditional (they can touch any course, including ones faculty
+ * created). Faculty never edits/deletes directly, even their own courses
+ * — that goes through CourseChangeRequestController instead (hold until
  * an admin/intern approves it).
  *
  * store()/update() also accept the same optional file_pdf/file_docx (+
  * curriculum_year) fields SyllabusController's standalone upload page
  * does — added per Rico, 2026-08-12, so a syllabus can be attached right
- * on the Add/Edit Subject form instead of a separate navigation. Both
+ * on the Add/Edit Course form instead of a separate navigation. Both
  * delegate to SyllabusFileService, which is also where the "replace,
  * don't append" behavior lives.
  */
-class SubjectController extends Controller
+class CourseController extends Controller
 {
     public function __construct(private readonly SyllabusFileService $files)
     {
@@ -44,7 +44,7 @@ class SubjectController extends Controller
             'semester' => ['nullable', 'in:1st,2nd,summer'],
         ]);
 
-        $subjects = Subject::query()
+        $courses = Course::query()
             ->with(['program', 'latestSyllabus'])
             ->when($validated['program'] ?? null, fn ($q, $code) => $q->whereHas(
                 'program',
@@ -53,30 +53,30 @@ class SubjectController extends Controller
             ->when($validated['year_level'] ?? null, fn ($q, $year) => $q->where('year_level', $year))
             ->when($validated['semester'] ?? null, fn ($q, $sem) => $q->where('semester', $sem))
             ->orderBy('year_level')
-            ->orderBy('subject_code')
+            ->orderBy('course_code')
             ->paginate(20)
             ->withQueryString();
 
-        return view('subjects.index', [
-            'subjects' => $subjects,
+        return view('courses.index', [
+            'courses' => $courses,
             'filters' => $validated,
         ]);
     }
 
-    public function show(Subject $subject): View
+    public function show(Course $course): View
     {
-        $subject->load([
+        $course->load([
             'program',
             'creator',
             'syllabi' => fn ($q) => $q->latest(),
         ]);
 
-        return view('subjects.show', compact('subject'));
+        return view('courses.show', compact('course'));
     }
 
     public function create(): View
     {
-        return view('subjects.create', [
+        return view('courses.create', [
             'programs' => Program::orderBy('code')->get(),
             'curriculumYears' => SyllabusController::curriculumYearOptions(),
         ]);
@@ -84,11 +84,11 @@ class SubjectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $this->validateSubject($request);
+        $validated = $this->validateCourse($request);
         $fileValidated = $this->validateFiles($request);
 
         try {
-            $subject = Subject::create(array_merge($validated, [
+            $course = Course::create(array_merge($validated, [
                 'created_by' => $request->user()->id,
             ]));
         } catch (QueryException $e) {
@@ -96,93 +96,93 @@ class SubjectController extends Controller
             // Rule::unique checks above already catch this in the normal
             // case, but they can't see a row inserted after they ran.
             return back()
-                ->withErrors(['subject_code' => 'That subject code or title was just taken by another submission. Please check and try again.'])
+                ->withErrors(['course_code' => 'That course code or title was just taken by another submission. Please check and try again.'])
                 ->withInput();
         }
 
         if (SyllabusFileService::hasAnyFile($fileValidated)) {
             $this->files->storeFor(
-                $subject,
+                $course,
                 $fileValidated,
                 $request->user()->id,
                 $fileValidated['curriculum_year'] ?? null
             );
         }
 
-        return redirect()->route('subjects.show', $subject)->with('status', 'Subject created successfully.');
+        return redirect()->route('courses.show', $course)->with('status', 'Course created successfully.');
     }
 
-    public function edit(Subject $subject): View
+    public function edit(Course $course): View
     {
-        $subject->load(['syllabi' => fn ($q) => $q->latest()]);
+        $course->load(['syllabi' => fn ($q) => $q->latest()]);
 
-        return view('subjects.edit', [
-            'subject' => $subject,
+        return view('courses.edit', [
+            'course' => $course,
             'programs' => Program::orderBy('code')->get(),
             'curriculumYears' => SyllabusController::curriculumYearOptions(),
         ]);
     }
 
-    public function update(Request $request, Subject $subject): RedirectResponse
+    public function update(Request $request, Course $course): RedirectResponse
     {
-        $validated = $this->validateSubject($request, $subject->id);
+        $validated = $this->validateCourse($request, $course->id);
         $fileValidated = $this->validateFiles($request);
 
         try {
-            $subject->update($validated);
+            $course->update($validated);
         } catch (QueryException $e) {
             // Same race backstop as store() above.
             return back()
-                ->withErrors(['subject_code' => 'That subject code or title was just taken by another submission. Please check and try again.'])
+                ->withErrors(['course_code' => 'That course code or title was just taken by another submission. Please check and try again.'])
                 ->withInput();
         }
 
         if (SyllabusFileService::hasAnyFile($fileValidated)) {
             $this->files->storeFor(
-                $subject,
+                $course,
                 $fileValidated,
                 $request->user()->id,
                 $fileValidated['curriculum_year'] ?? null
             );
         }
 
-        return redirect()->route('subjects.show', $subject)->with('status', 'Subject updated successfully.');
+        return redirect()->route('courses.show', $course)->with('status', 'Course updated successfully.');
     }
 
-    public function destroy(Subject $subject): RedirectResponse
+    public function destroy(Course $course): RedirectResponse
     {
-        $subject->delete();
+        $course->delete();
 
-        return redirect()->route('subjects.index')->with('status', 'Subject deleted successfully.');
+        return redirect()->route('courses.index')->with('status', 'Course deleted successfully.');
     }
 
-    private function validateSubject(Request $request, ?int $ignoreId = null): array
+    private function validateCourse(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
             'program_id' => ['required', 'exists:programs,id'],
             // System-wide uniqueness (not scoped to program_id) per Rico,
-            // 2026-08-12: only one live subject may ever hold a given code
+            // 2026-08-12: only one live course may ever hold a given code
             // or title, across BSIT/DIT both — a curriculum update is
-            // modeled as admin deleting the old subject, not coexisting
-            // side-by-side with it. subjects.title/subject_code columns
+            // modeled as admin deleting the old course, not coexisting
+            // side-by-side with it. courses.title/course_code columns
             // use utf8mb4_0900_ai_ci collation, so these unique checks are
             // already case-insensitive at the DB level. whereNull(deleted_at)
-            // excludes soft-deleted subjects so a retired code/title frees
+            // excludes soft-deleted courses so a retired code/title frees
             // up for reuse.
-            'subject_code' => [
+            'course_code' => [
                 'required', 'string', 'max:20',
-                Rule::unique('subjects', 'subject_code')->whereNull('deleted_at')->ignore($ignoreId),
+                Rule::unique('courses', 'course_code')->whereNull('deleted_at')->ignore($ignoreId),
             ],
             'title' => [
                 'required', 'string', 'max:255',
-                Rule::unique('subjects', 'title')->whereNull('deleted_at')->ignore($ignoreId),
+                Rule::unique('courses', 'title')->whereNull('deleted_at')->ignore($ignoreId),
             ],
             // Year level is a dropdown of 1st-4th Year only (CLAUDE.md
             // programs are 4-year curricula) — Rico, 2026-08-12.
             'year_level' => ['required', 'integer', 'min:1', 'max:4'],
             'semester' => ['required', 'in:1st,2nd,summer'],
             // Already optional by design — prerequisite/corequisite are
-            // legitimately not every subject's business.
+            // legitimately not every course's business.
             'prerequisite' => ['nullable', 'string', 'max:255'],
             'corequisite' => ['nullable', 'string', 'max:255'],
             'lecture_hours' => ['nullable', 'numeric', 'min:0', 'max:999.9'],

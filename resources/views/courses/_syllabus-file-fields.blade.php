@@ -1,7 +1,7 @@
-{{-- Optional inline PDF/DOCX upload used by subjects.create and
-     subjects.edit (NOT subjects.request-edit — that form doesn't handle
+{{-- Optional inline PDF/DOCX upload used by courses.create and
+     courses.edit (NOT courses.request-edit — that form doesn't handle
      files, it only proposes field changes for approval). Uploading here
-     replaces this subject's existing syllabus of the same file type
+     replaces this course's existing syllabus of the same file type
      rather than adding alongside it. Expects $curriculumYears. --}}
 <div class="row">
     <div class="col-md-4 mb-3">

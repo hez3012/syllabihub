@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Subject;
-use App\Models\SubjectChangeRequest;
+use App\Models\Course;
+use App\Models\CourseChangeRequest;
 use App\Models\Syllabus;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,35 +20,35 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $subjects = $user->createdSubjects()
+        $courses = $user->createdCourses()
             ->with(['program', 'latestSyllabus'])
-            ->orderBy('subject_code')
+            ->orderBy('course_code')
             ->get();
 
-        $pendingRequests = $user->subjectChangeRequests()
-            ->with('subject')
+        $pendingRequests = $user->courseChangeRequests()
+            ->with('course')
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        return view('dashboard.faculty', compact('subjects', 'pendingRequests'));
+        return view('dashboard.faculty', compact('courses', 'pendingRequests'));
     }
 
     public function admin(): View
     {
-        $totalSubjects = Subject::count();
-        $withSyllabus = Subject::whereHas('syllabi')->count();
-        $missing = $totalSubjects - $withSyllabus;
+        $totalCourses = Course::count();
+        $withSyllabus = Course::whereHas('syllabi')->count();
+        $missing = $totalCourses - $withSyllabus;
 
-        $recentUploads = Syllabus::with(['subject', 'uploader'])
+        $recentUploads = Syllabus::with(['course', 'uploader'])
             ->latest()
             ->limit(10)
             ->get();
 
-        $pendingRequestCount = SubjectChangeRequest::where('status', 'pending')->count();
+        $pendingRequestCount = CourseChangeRequest::where('status', 'pending')->count();
 
         return view('dashboard.admin', compact(
-            'totalSubjects',
+            'totalCourses',
             'withSyllabus',
             'missing',
             'recentUploads',

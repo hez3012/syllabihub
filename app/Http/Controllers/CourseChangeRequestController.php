@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
+use App\Models\CourseChangeRequest;
 use App\Models\Program;
-use App\Models\Subject;
-use App\Models\SubjectChangeRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,38 +12,38 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Faculty-side: propose an edit/delete on a subject THEY created (route
+ * Faculty-side: propose an edit/delete on a course THEY created (route
  * middleware is role:faculty; ownership is checked here per-request since
- * a faculty account could otherwise pass someone else's subject id).
+ * a faculty account could otherwise pass someone else's course id).
  * Admin/intern-side: review the queue, approve or reject.
  *
- * Hold-until-approved: nothing about the subject changes until an
+ * Hold-until-approved: nothing about the course changes until an
  * admin/intern approves the request.
  */
-class SubjectChangeRequestController extends Controller
+class CourseChangeRequestController extends Controller
 {
-    public function editForm(Request $request, Subject $subject): View
+    public function editForm(Request $request, Course $course): View
     {
-        $this->authorizeOwner($request, $subject);
+        $this->authorizeOwner($request, $course);
 
-        return view('subjects.request-edit', [
-            'subject' => $subject,
+        return view('courses.request-edit', [
+            'course' => $course,
             'programs' => Program::orderBy('code')->get(),
         ]);
     }
 
-    public function requestUpdate(Request $request, Subject $subject): RedirectResponse
+    public function requestUpdate(Request $request, Course $course): RedirectResponse
     {
-        $this->authorizeOwner($request, $subject);
-        $this->blockIfAlreadyPending($subject);
+        $this->authorizeOwner($request, $course);
+        $this->blockIfAlreadyPending($course);
 
         $validated = $request->validate([
             'program_id' => ['required', 'exists:programs,id'],
-            'subject_code' => [
+            'course_code' => [
                 'required', 'string', 'max:20',
-                Rule::unique('subjects')
+                Rule::unique('courses')
                     ->where(fn ($q) => $q->where('program_id', $request->input('program_id')))
-                    ->ignore($subject->id),
+                    ->ignore($course->id),
             ],
             'title' => ['required', 'string', 'max:255'],
             'year_level' => ['required', 'integer', 'min:1', 'max:4'],
@@ -59,63 +59,63 @@ class SubjectChangeRequestController extends Controller
         // Per Rico, 2026-08-12: pressing "Submit" with no actual field
         // changes should be rejected — there's nothing for an admin to
         // review.
-        if ($this->hasNoChanges($subject, $validated)) {
+        if ($this->hasNoChanges($course, $validated)) {
             return back()
                 ->withErrors(['request' => 'No changes were made. Please update at least one field before submitting your request.'])
                 ->withInput();
         }
 
-        SubjectChangeRequest::create([
-            'subject_id' => $subject->id,
+        CourseChangeRequest::create([
+            'course_id' => $course->id,
             'requested_by' => $request->user()->id,
             'action' => 'update',
             'payload' => $validated,
             'status' => 'pending',
         ]);
 
-        return redirect()->route('subjects.show', $subject)
-            ->with('status', 'Your edit request has been submitted and is awaiting admin approval. The subject has not been changed yet.');
+        return redirect()->route('courses.show', $course)
+            ->with('status', 'Your edit request has been submitted and is awaiting admin approval. The course has not been changed yet.');
     }
 
-    public function requestDelete(Request $request, Subject $subject): RedirectResponse
+    public function requestDelete(Request $request, Course $course): RedirectResponse
     {
-        $this->authorizeOwner($request, $subject);
-        $this->blockIfAlreadyPending($subject);
+        $this->authorizeOwner($request, $course);
+        $this->blockIfAlreadyPending($course);
 
-        SubjectChangeRequest::create([
-            'subject_id' => $subject->id,
+        CourseChangeRequest::create([
+            'course_id' => $course->id,
             'requested_by' => $request->user()->id,
             'action' => 'delete',
             'status' => 'pending',
         ]);
 
-        return redirect()->route('subjects.show', $subject)
+        return redirect()->route('courses.show', $course)
             ->with('status', 'Your delete request has been submitted and is awaiting admin approval.');
     }
 
     /** Admin/intern: queue of pending requests. */
     public function index(): View
     {
-        $requests = SubjectChangeRequest::with(['subject', 'requester'])
+        $requests = CourseChangeRequest::with(['course', 'requester'])
             ->where('status', 'pending')
             ->latest()
             ->get();
 
-        return view('admin.subject-requests.index', compact('requests'));
+        return view('admin.course-requests.index', compact('requests'));
     }
 
-    public function approve(Request $request, SubjectChangeRequest $changeRequest): RedirectResponse
+    public function approve(Request $request, CourseChangeRequest $changeRequest): RedirectResponse
     {
         abort_unless($changeRequest->status === 'pending', 404);
 
         try {
             if ($changeRequest->action === 'update') {
-                $changeRequest->subject->update($changeRequest->payload->getArrayCopy());
+                $changeRequest->course->update($changeRequest->payload->getArrayCopy());
             } else {
-                $changeRequest->subject->delete();
+                $changeRequest->course->delete();
             }
         } catch (QueryException $e) {
-            return back()->withErrors(['request' => 'The request could not be applied — there may be a conflict (e.g., a duplicate subject code). Details: ' . $e->getMessage()]);
+            return back()->withErrors(['request' => 'The request could not be applied — there may be a conflict (e.g., a duplicate course code). Details: ' . $e->getMessage()]);
         }
 
         $changeRequest->update([
@@ -127,7 +127,7 @@ class SubjectChangeRequestController extends Controller
         return back()->with('status', 'Request approved.');
     }
 
-    public function reject(Request $request, SubjectChangeRequest $changeRequest): RedirectResponse
+    public function reject(Request $request, CourseChangeRequest $changeRequest): RedirectResponse
     {
         abort_unless($changeRequest->status === 'pending', 404);
 
@@ -145,29 +145,29 @@ class SubjectChangeRequestController extends Controller
         return back()->with('status', 'Request rejected.');
     }
 
-    private function authorizeOwner(Request $request, Subject $subject): void
+    private function authorizeOwner(Request $request, Course $course): void
     {
-        abort_unless($subject->created_by === $request->user()->id, 403, 'You did not create this subject, so you cannot edit or delete it.');
+        abort_unless($course->created_by === $request->user()->id, 403, 'You did not create this course, so you cannot edit or delete it.');
     }
 
-    private function blockIfAlreadyPending(Subject $subject): void
+    private function blockIfAlreadyPending(Course $course): void
     {
-        if ($subject->hasPendingChangeRequest()) {
-            abort(422, 'A request for this subject is already pending. Please wait for it to be reviewed before submitting another.');
+        if ($course->hasPendingChangeRequest()) {
+            abort(422, 'A request for this course is already pending. Please wait for it to be reviewed before submitting another.');
         }
     }
 
     /**
-     * True if every field in $validated matches the subject's current
+     * True if every field in $validated matches the course's current
      * value — i.e., the faculty member submitted the form without
      * actually changing anything. Loose (!=) comparison so e.g. the
      * decimal string "2" from a form input still matches the model's
      * "2.0" without a false "changed" positive.
      */
-    private function hasNoChanges(Subject $subject, array $validated): bool
+    private function hasNoChanges(Course $course, array $validated): bool
     {
         foreach ($validated as $field => $newValue) {
-            if (($subject->{$field} ?? '') != ($newValue ?? '')) {
+            if (($course->{$field} ?? '') != ($newValue ?? '')) {
                 return false;
             }
         }

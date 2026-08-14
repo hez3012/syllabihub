@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Subject;
+use App\Models\Course;
 use App\Models\Syllabus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,12 +12,12 @@ use Illuminate\Http\Request;
  *
  * No LLM involved. Two layers:
  *   1. MySQL FULLTEXT (BOOLEAN MODE, prefix-wildcarded on the last token)
- *      against subjects(subject_code, title) and syllabi(raw_text).
+ *      against courses(course_code, title) and syllabi(raw_text).
  *   2. Application-level fuzzy fallback (similar_text/levenshtein-style
- *      scoring) over subjects only, used when FULLTEXT finds nothing —
+ *      scoring) over courses only, used when FULLTEXT finds nothing —
  *      covers typos that FULLTEXT can't (it matches literal tokens).
  *
- * Every result traces back to a real row in subjects/syllabi — nothing is
+ * Every result traces back to a real row in courses/syllabi — nothing is
  * generated, so there's no hallucination risk.
  */
 class SearchController extends Controller
@@ -45,7 +45,7 @@ class SearchController extends Controller
     }
 
     /**
-     * The actual subject+syllabus retrieval, split out from search() so
+     * The actual course+syllabus retrieval, split out from search() so
      * ChatbotService can reuse it as grounding context for "Ask
      * SyllabiHub" chat replies (per Rico, 2026-08-12) without going
      * through HTTP or duplicating the FULLTEXT/fuzzy logic. Same
@@ -58,10 +58,10 @@ class SearchController extends Controller
      *                            default only for ChatbotService's per-
      *                            keyword retry (see its gatherResults()) —
      *                            fuzzy scoring a single generic word (e.g.
-     *                            "credit", "ilan") against every subject
+     *                            "credit", "ilan") against every course
      *                            can coincidentally clear the similarity
      *                            threshold and surface an unrelated
-     *                            subject, which is worse there than
+     *                            course, which is worse there than
      *                            finding nothing.
      * @return array<int, array<string, mixed>>
      */
@@ -73,59 +73,59 @@ class SearchController extends Controller
             return [];
         }
 
-        $subjectResults = $this->searchSubjects($query, $allowFuzzy);
+        $courseResults = $this->searchCourses($query, $allowFuzzy);
         $syllabusResults = $this->searchSyllabusContent($query);
 
-        $results = $this->mergeResults($subjectResults, $syllabusResults);
+        $results = $this->mergeResults($courseResults, $syllabusResults);
 
         return array_slice($results, 0, self::MAX_RESULTS);
     }
 
     /**
-     * Subject search: try FULLTEXT first (fast, index-backed). If it finds
+     * Course search: try FULLTEXT first (fast, index-backed). If it finds
      * nothing — most likely a typo — fall back to a PHP-side fuzzy scan.
-     * The subjects table is curriculum-sized (tens to low hundreds of rows),
+     * The courses table is curriculum-sized (tens to low hundreds of rows),
      * so scanning it in PHP for the fallback is cheap.
      */
-    private function searchSubjects(string $query, bool $allowFuzzy = true): array
+    private function searchCourses(string $query, bool $allowFuzzy = true): array
     {
         $boolean = $this->toBooleanQuery($query);
 
         if ($boolean !== '') {
-            $matches = Subject::query()
-                ->select('subjects.*')
-                ->selectRaw('MATCH(subject_code, title) AGAINST(? IN BOOLEAN MODE) as relevance', [$boolean])
-                ->whereRaw('MATCH(subject_code, title) AGAINST(? IN BOOLEAN MODE)', [$boolean])
+            $matches = Course::query()
+                ->select('courses.*')
+                ->selectRaw('MATCH(course_code, title) AGAINST(? IN BOOLEAN MODE) as relevance', [$boolean])
+                ->whereRaw('MATCH(course_code, title) AGAINST(? IN BOOLEAN MODE)', [$boolean])
                 ->with(['program', 'latestSyllabus'])
                 ->orderByDesc('relevance')
                 ->limit(self::MAX_RESULTS)
                 ->get();
 
             if ($matches->isNotEmpty()) {
-                return $matches->map(fn (Subject $s) => $this->formatSubject($s, 'fulltext', 100.0))->all();
+                return $matches->map(fn (Course $c) => $this->formatCourse($c, 'fulltext', 100.0))->all();
             }
         }
 
-        return $allowFuzzy ? $this->fuzzySubjectSearch($query) : [];
+        return $allowFuzzy ? $this->fuzzyCourseSearch($query) : [];
     }
 
-    private function fuzzySubjectSearch(string $query): array
+    private function fuzzyCourseSearch(string $query): array
     {
         $needle = strtolower($query);
         $needleCompact = preg_replace('/\s+/', '', $needle);
 
-        $subjects = Subject::with(['program', 'latestSyllabus'])->get();
+        $courses = Course::with(['program', 'latestSyllabus'])->get();
 
         $scored = [];
 
-        foreach ($subjects as $subject) {
-            $combined = strtolower($subject->subject_code . ' ' . $subject->title);
+        foreach ($courses as $course) {
+            $combined = strtolower($course->course_code . ' ' . $course->title);
             $combinedCompact = preg_replace('/\s+/', '', $combined);
 
             // Direct substring match (handles "comp016" vs "COMP 016",
             // or a query that's just part of the title) — treat as strong.
             if (str_contains($combined, $needle) || str_contains($combinedCompact, $needleCompact)) {
-                $scored[] = [$subject, 95.0];
+                $scored[] = [$course, 95.0];
                 continue;
             }
 
@@ -144,7 +144,7 @@ class SearchController extends Controller
             $score = max($percentFull, $percentCompact, $bestWordPercent);
 
             if ($score >= self::FUZZY_THRESHOLD) {
-                $scored[] = [$subject, $score];
+                $scored[] = [$course, $score];
             }
         }
 
@@ -152,7 +152,7 @@ class SearchController extends Controller
         $scored = array_slice($scored, 0, self::MAX_RESULTS);
 
         return array_map(
-            fn (array $pair) => $this->formatSubject($pair[0], 'fuzzy', round($pair[1], 1)),
+            fn (array $pair) => $this->formatCourse($pair[0], 'fuzzy', round($pair[1], 1)),
             $scored
         );
     }
@@ -160,7 +160,7 @@ class SearchController extends Controller
     /**
      * Search inside uploaded syllabus text. FULLTEXT only — raw_text can be
      * long, so a PHP-side fuzzy scan here would be expensive and isn't
-     * needed for the "Ask SyllabiHub" use case (subject lookup is the
+     * needed for the "Ask SyllabiHub" use case (course lookup is the
      * primary flow; content search is a bonus signal).
      */
     private function searchSyllabusContent(string $query): array
@@ -176,23 +176,23 @@ class SearchController extends Controller
             ->selectRaw('MATCH(raw_text) AGAINST(? IN BOOLEAN MODE) as relevance', [$boolean])
             ->whereRaw('MATCH(raw_text) AGAINST(? IN BOOLEAN MODE)', [$boolean])
             ->whereNotNull('raw_text')
-            ->with('subject.program')
+            ->with('course.program')
             ->orderByDesc('relevance')
             ->limit(self::MAX_RESULTS)
             ->get();
 
         return $matches
-            ->filter(fn (Syllabus $syllabus) => $syllabus->subject !== null)
+            ->filter(fn (Syllabus $syllabus) => $syllabus->course !== null)
             ->map(function (Syllabus $syllabus) use ($query) {
-                $subject = $syllabus->subject;
+                $course = $syllabus->course;
 
                 return [
-                    'subject_id' => $subject->id,
-                    'subject_code' => $subject->subject_code,
-                    'title' => $subject->title,
-                    'program' => $subject->program?->code,
-                    'year_level' => $subject->year_level,
-                    'semester' => $subject->semester,
+                    'course_id' => $course->id,
+                    'course_code' => $course->course_code,
+                    'title' => $course->title,
+                    'program' => $course->program?->code,
+                    'year_level' => $course->year_level,
+                    'semester' => $course->semester,
                     'match_type' => 'syllabus_content',
                     'score' => 92.0,
                     'has_syllabus' => true,
@@ -210,7 +210,7 @@ class SearchController extends Controller
      * — e.g. "web dev" -> +web +dev*
      *
      * Mixed alnum tokens are split on letter/digit boundaries ("comp016"
-     * -> "comp", "016") so a subject code typed without its space still
+     * -> "comp", "016") so a course code typed without its space still
      * lines up with the index, which tokenizes "COMP 016" as two words.
      * This resolves formatting differences precisely via FULLTEXT instead
      * of leaning on the fuzzy fallback, which can't tell "COMP 016" from
@@ -265,25 +265,25 @@ class SearchController extends Controller
         return ($start > 0 ? '...' : '') . $snippet . '...';
     }
 
-    private function formatSubject(Subject $subject, string $matchType, float $score): array
+    private function formatCourse(Course $course, string $matchType, float $score): array
     {
-        $latest = $subject->relationLoaded('latestSyllabus')
-            ? $subject->latestSyllabus
-            : $subject->latestSyllabus()->first();
+        $latest = $course->relationLoaded('latestSyllabus')
+            ? $course->latestSyllabus
+            : $course->latestSyllabus()->first();
 
         return [
-            'subject_id' => $subject->id,
-            'subject_code' => $subject->subject_code,
-            'title' => $subject->title,
-            'program' => $subject->program?->code,
-            'year_level' => $subject->year_level,
-            'semester' => $subject->semester,
-            'prerequisite' => $subject->prerequisite,
-            'corequisite' => $subject->corequisite,
-            'lecture_hours' => $subject->lecture_hours,
-            'lab_hours' => $subject->lab_hours,
-            'credited_units' => $subject->credited_units,
-            'tuition_hours' => $subject->tuition_hours,
+            'course_id' => $course->id,
+            'course_code' => $course->course_code,
+            'title' => $course->title,
+            'program' => $course->program?->code,
+            'year_level' => $course->year_level,
+            'semester' => $course->semester,
+            'prerequisite' => $course->prerequisite,
+            'corequisite' => $course->corequisite,
+            'lecture_hours' => $course->lecture_hours,
+            'lab_hours' => $course->lab_hours,
+            'credited_units' => $course->credited_units,
+            'tuition_hours' => $course->tuition_hours,
             'match_type' => $matchType,
             'score' => $score,
             'has_syllabus' => $latest !== null,
@@ -293,35 +293,35 @@ class SearchController extends Controller
     }
 
     /**
-     * Combine subject-level and syllabus-content matches, deduping by
-     * subject id. A subject that matched both keeps the higher score and
+     * Combine course-level and syllabus-content matches, deduping by
+     * course id. A course that matched both keeps the higher score and
      * picks up the content snippet.
      */
-    private function mergeResults(array $subjectResults, array $syllabusResults): array
+    private function mergeResults(array $courseResults, array $syllabusResults): array
     {
-        $bySubject = [];
+        $byCourse = [];
 
-        foreach ($subjectResults as $result) {
-            $bySubject[$result['subject_id']] = $result;
+        foreach ($courseResults as $result) {
+            $byCourse[$result['course_id']] = $result;
         }
 
         foreach ($syllabusResults as $result) {
-            $id = $result['subject_id'];
+            $id = $result['course_id'];
 
-            if (!isset($bySubject[$id])) {
-                $bySubject[$id] = $result;
+            if (!isset($byCourse[$id])) {
+                $byCourse[$id] = $result;
                 continue;
             }
 
-            $existing = $bySubject[$id];
+            $existing = $byCourse[$id];
             $existing['snippet'] = $result['snippet'];
             $existing['has_syllabus'] = true;
             $existing['syllabus_id'] = $result['syllabus_id'];
             $existing['score'] = max($existing['score'], $result['score']);
-            $bySubject[$id] = $existing;
+            $byCourse[$id] = $existing;
         }
 
-        $results = array_values($bySubject);
+        $results = array_values($byCourse);
         usort($results, fn (array $a, array $b) => $b['score'] <=> $a['score']);
 
         return $results;

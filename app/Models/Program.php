@@ -11,8 +11,8 @@ class Program extends Model
 
     protected $fillable = ['code', 'name'];
 
-    public function subjects()
+    public function courses()
     {
-        return $this->hasMany(Subject::class);
+        return $this->hasMany(Course::class);
     }
 }

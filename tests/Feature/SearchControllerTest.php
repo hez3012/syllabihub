@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Course;
 use App\Models\Program;
-use App\Models\Subject;
 use App\Models\Syllabus;
 use App\Models\User;
 use Tests\TestCase;
@@ -19,15 +19,15 @@ use Tests\TestCase;
  * the same transaction. So fixtures are created and committed for real,
  * then explicitly force-deleted in tearDown().
  *
- * To avoid leaking rows via nested factory relationships (Subject's
+ * To avoid leaking rows via nested factory relationships (Course's
  * program_id, Syllabus's uploaded_by) — which would commit for real too
  * and never get cleaned up — helpers below reuse an existing Program/User
- * instead of creating throwaway ones. Only Subject/Syllabus rows (the
+ * instead of creating throwaway ones. Only Course/Syllabus rows (the
  * things these tests actually exercise) get created and tracked.
  */
 class SearchControllerTest extends TestCase
 {
-    private array $subjectIds = [];
+    private array $courseIds = [];
 
     protected function setUp(): void
     {
@@ -42,20 +42,20 @@ class SearchControllerTest extends TestCase
 
     protected function tearDown(): void
     {
-        Syllabus::withTrashed()->whereIn('subject_id', $this->subjectIds)->forceDelete();
-        Subject::withTrashed()->whereIn('id', $this->subjectIds)->forceDelete();
+        Syllabus::withTrashed()->whereIn('course_id', $this->courseIds)->forceDelete();
+        Course::withTrashed()->whereIn('id', $this->courseIds)->forceDelete();
 
         parent::tearDown();
     }
 
-    private function makeSubject(array $attributes = []): Subject
+    private function makeCourse(array $attributes = []): Course
     {
         $programId = Program::query()->value('id') ?? Program::factory()->create()->id;
 
-        $subject = Subject::factory()->create(array_merge(['program_id' => $programId], $attributes));
-        $this->subjectIds[] = $subject->id;
+        $course = Course::factory()->create(array_merge(['program_id' => $programId], $attributes));
+        $this->courseIds[] = $course->id;
 
-        return $subject;
+        return $course;
     }
 
     private function existingUserId(): int
@@ -63,24 +63,24 @@ class SearchControllerTest extends TestCase
         return User::query()->value('id') ?? User::factory()->create()->id;
     }
 
-    public function test_exact_subject_code_match_via_fulltext(): void
+    public function test_exact_course_code_match_via_fulltext(): void
     {
-        $subject = $this->makeSubject([
-            'subject_code' => 'TST 016',
+        $course = $this->makeCourse([
+            'course_code' => 'TST 016',
             'title' => 'Web Development Fixture',
         ]);
 
         $response = $this->getJson('/api/search?q=' . urlencode('TST 016'));
 
         $response->assertOk();
-        $response->assertJsonPath('results.0.subject_id', $subject->id);
+        $response->assertJsonPath('results.0.course_id', $course->id);
         $response->assertJsonPath('results.0.match_type', 'fulltext');
     }
 
     public function test_code_typed_without_space_still_resolves_via_fulltext(): void
     {
-        $subject = $this->makeSubject([
-            'subject_code' => 'TST 016',
+        $course = $this->makeCourse([
+            'course_code' => 'TST 016',
             'title' => 'Web Development Fixture',
         ]);
 
@@ -88,39 +88,39 @@ class SearchControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonCount(1, 'results');
-        $response->assertJsonPath('results.0.subject_id', $subject->id);
+        $response->assertJsonPath('results.0.course_id', $course->id);
     }
 
     public function test_partial_word_matches_like_autocomplete(): void
     {
-        $subject = $this->makeSubject(['title' => 'Advanced Networking Concepts']);
+        $course = $this->makeCourse(['title' => 'Advanced Networking Concepts']);
 
         $response = $this->getJson('/api/search?q=network');
 
         $response->assertOk();
-        $response->assertJsonFragment(['subject_id' => $subject->id]);
+        $response->assertJsonFragment(['course_id' => $course->id]);
     }
 
     public function test_typo_falls_back_to_fuzzy_match(): void
     {
-        $subject = $this->makeSubject([
-            'subject_code' => 'TST 099',
+        $course = $this->makeCourse([
+            'course_code' => 'TST 099',
             'title' => 'Database Fundamentals',
         ]);
 
         $response = $this->getJson('/api/search?q=' . urlencode('databse fundamentals'));
 
         $response->assertOk();
-        $response->assertJsonFragment(['subject_id' => $subject->id]);
+        $response->assertJsonFragment(['course_id' => $course->id]);
         $response->assertJsonPath('results.0.match_type', 'fuzzy');
     }
 
-    public function test_syllabus_content_match_surfaces_a_subject_with_no_title_match(): void
+    public function test_syllabus_content_match_surfaces_a_course_with_no_title_match(): void
     {
-        $subject = $this->makeSubject(['title' => 'Special Topics in Computing']);
+        $course = $this->makeCourse(['title' => 'Special Topics in Computing']);
 
         Syllabus::factory()->create([
-            'subject_id' => $subject->id,
+            'course_id' => $course->id,
             'uploaded_by' => $this->existingUserId(),
             'raw_text' => 'This course goes deep into container orchestration and kubernetes clusters.',
             'status' => 'processed',
@@ -129,7 +129,7 @@ class SearchControllerTest extends TestCase
         $response = $this->getJson('/api/search?q=' . urlencode('kubernetes clusters'));
 
         $response->assertOk();
-        $response->assertJsonPath('results.0.subject_id', $subject->id);
+        $response->assertJsonPath('results.0.course_id', $course->id);
         $response->assertJsonPath('results.0.match_type', 'syllabus_content');
         $this->assertNotNull($response->json('results.0.snippet'));
     }

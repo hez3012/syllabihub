@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\SyllabusController;
-use App\Models\Subject;
+use App\Models\Course;
 use App\Models\Syllabus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -30,18 +30,18 @@ class SyllabusUploadDownloadTest extends TestCase
     {
         Storage::fake('local');
         $faculty = User::factory()->create(['role' => 'faculty']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
         $file = $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf');
 
-        $response = $this->actingAs($faculty)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($faculty)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $file,
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
 
-        $response->assertRedirect(route('subjects.show', $subject));
+        $response->assertRedirect(route('courses.show', $course));
 
-        $syllabus = Syllabus::where('subject_id', $subject->id)->firstOrFail();
+        $syllabus = Syllabus::where('course_id', $course->id)->firstOrFail();
         $this->assertSame('processed', $syllabus->status);
         $this->assertSame('pdf', $syllabus->file_type);
         $this->assertSame('sample-syllabus.pdf', $syllabus->original_filename);
@@ -53,7 +53,7 @@ class SyllabusUploadDownloadTest extends TestCase
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
         $file = $this->realUploadedFile(
             'sample-syllabus.docx',
@@ -61,13 +61,13 @@ class SyllabusUploadDownloadTest extends TestCase
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         );
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_docx' => $file,
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
 
         $response->assertRedirect();
-        $syllabus = Syllabus::where('subject_id', $subject->id)->firstOrFail();
+        $syllabus = Syllabus::where('course_id', $course->id)->firstOrFail();
         $this->assertSame('processed', $syllabus->status);
         $this->assertSame('docx', $syllabus->file_type);
         $this->assertStringContainsString('Fixture Subject', $syllabus->raw_text);
@@ -77,9 +77,9 @@ class SyllabusUploadDownloadTest extends TestCase
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf'),
             'file_docx' => $this->realUploadedFile(
                 'sample-syllabus.docx',
@@ -90,37 +90,37 @@ class SyllabusUploadDownloadTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $this->assertSame(2, Syllabus::where('subject_id', $subject->id)->count());
-        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->count());
-        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'docx')->count());
+        $this->assertSame(2, Syllabus::where('course_id', $course->id)->count());
+        $this->assertSame(1, Syllabus::where('course_id', $course->id)->where('file_type', 'pdf')->count());
+        $this->assertSame(1, Syllabus::where('course_id', $course->id)->where('file_type', 'docx')->count());
     }
 
     public function test_reuploading_the_same_file_type_replaces_the_existing_syllabus_instead_of_appending(): void
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
-        $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf'),
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
-        $firstPdf = Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->firstOrFail();
+        $firstPdf = Syllabus::where('course_id', $course->id)->where('file_type', 'pdf')->firstOrFail();
 
-        $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $this->realUploadedFile('sample-syllabus.pdf', 'updated-syllabus.pdf', 'application/pdf'),
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
 
         // Old one is retired (soft-deleted), not left sitting alongside the new one.
         $this->assertSoftDeleted('syllabi', ['id' => $firstPdf->id]);
-        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->count());
+        $this->assertSame(1, Syllabus::where('course_id', $course->id)->where('file_type', 'pdf')->count());
 
-        $currentPdf = Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->firstOrFail();
+        $currentPdf = Syllabus::where('course_id', $course->id)->where('file_type', 'pdf')->firstOrFail();
         $this->assertSame('updated-syllabus.pdf', $currentPdf->original_filename);
 
-        // Uploading a PDF never touches an existing DOCX of the same subject.
-        $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        // Uploading a PDF never touches an existing DOCX of the same course.
+        $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_docx' => $this->realUploadedFile(
                 'sample-syllabus.docx',
                 'sample-syllabus.docx',
@@ -128,69 +128,69 @@ class SyllabusUploadDownloadTest extends TestCase
             ),
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
-        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'pdf')->count());
-        $this->assertSame(1, Syllabus::where('subject_id', $subject->id)->where('file_type', 'docx')->count());
+        $this->assertSame(1, Syllabus::where('course_id', $course->id)->where('file_type', 'pdf')->count());
+        $this->assertSame(1, Syllabus::where('course_id', $course->id)->where('file_type', 'docx')->count());
     }
 
     public function test_upload_requires_at_least_one_file(): void
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", []);
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", []);
 
         $response->assertSessionHasErrors('file_pdf');
-        $this->assertSame(0, Syllabus::where('subject_id', $subject->id)->count());
+        $this->assertSame(0, Syllabus::where('course_id', $course->id)->count());
     }
 
     public function test_upload_with_a_file_but_no_curriculum_year_is_rejected(): void
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $this->realUploadedFile('sample-syllabus.pdf', 'sample-syllabus.pdf', 'application/pdf'),
         ]);
 
         $response->assertSessionHasErrors('curriculum_year');
-        $this->assertSame(0, Syllabus::where('subject_id', $subject->id)->count());
+        $this->assertSame(0, Syllabus::where('course_id', $course->id)->count());
     }
 
     public function test_upload_rejects_a_disallowed_file_type(): void
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
         $file = UploadedFile::fake()->create('notes.txt', 10, 'text/plain');
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $file,
         ]);
 
         $response->assertSessionHasErrors('file_pdf');
-        $this->assertSame(0, Syllabus::where('subject_id', $subject->id)->count());
+        $this->assertSame(0, Syllabus::where('course_id', $course->id)->count());
     }
 
     public function test_structurally_broken_pdf_uploads_with_failed_status_but_stays_downloadable(): void
     {
         Storage::fake('local');
         $admin = User::factory()->create(['role' => 'admin']);
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
         // Real %PDF header (passes mimes:pdf validation) but not a parseable
         // PDF structure — exercises SyllabusTextExtractor's failure path.
         $file = $this->realUploadedFile('corrupted-syllabus.pdf', 'corrupted-syllabus.pdf', 'application/pdf');
 
-        $response = $this->actingAs($admin)->post("/subjects/{$subject->id}/syllabus", [
+        $response = $this->actingAs($admin)->post("/courses/{$course->id}/syllabus", [
             'file_pdf' => $file,
             'curriculum_year' => SyllabusController::curriculumYearOptions()[0],
         ]);
 
         $response->assertRedirect();
-        $syllabus = Syllabus::where('subject_id', $subject->id)->firstOrFail();
+        $syllabus = Syllabus::where('course_id', $course->id)->firstOrFail();
         $this->assertSame('failed', $syllabus->status);
         $this->assertNull($syllabus->raw_text);
 
@@ -200,9 +200,9 @@ class SyllabusUploadDownloadTest extends TestCase
 
     public function test_guest_is_redirected_away_from_the_upload_form(): void
     {
-        $subject = Subject::factory()->create();
+        $course = Course::factory()->create();
 
-        $response = $this->get("/subjects/{$subject->id}/syllabus/upload");
+        $response = $this->get("/courses/{$course->id}/syllabus/upload");
 
         $response->assertRedirect(route('login'));
     }

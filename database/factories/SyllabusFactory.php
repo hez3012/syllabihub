@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Subject;
+use App\Models\Course;
 use App\Models\Syllabus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,7 +17,7 @@ class SyllabusFactory extends Factory
     public function definition(): array
     {
         return [
-            'subject_id' => Subject::factory(),
+            'course_id' => Course::factory(),
             'file_path' => 'syllabi/test/' . fake()->uuid() . '.pdf',
             'file_type' => 'pdf',
             'raw_text' => fake()->paragraph(),

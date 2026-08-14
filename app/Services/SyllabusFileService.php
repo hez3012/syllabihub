@@ -2,20 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\Subject;
+use App\Models\Course;
 use App\Models\Syllabus;
 use Illuminate\Support\Facades\Storage;
 
 /**
  * Shared PDF/DOCX upload handling — used by both SyllabusController (the
- * standalone upload page) and SubjectController (inline upload/replace on
- * Add Subject and Edit Subject), so the validation rules, storage, text
+ * standalone upload page) and CourseController (inline upload/replace on
+ * Add Course and Edit Course), so the validation rules, storage, text
  * extraction, and "replace, don't append" behavior only live in one place.
  *
  * Each of file_pdf/file_docx is independent and optional — a caller may
  * submit one, the other, or both in the same request (each becomes its own
  * Syllabus row). Per Rico, 2026-08-12: re-uploading a file type for a
- * subject REPLACES that subject's existing syllabus of the same type
+ * course REPLACES that course's existing syllabus of the same type
  * (soft-deleted, not left to accumulate alongside the new one) — a
  * curriculum update supersedes the old file rather than adding a version
  * next to it.
@@ -47,7 +47,7 @@ class SyllabusFileService
 
     /**
      * curriculum_year rule: required_with, not an unconditional required,
-     * on BOTH the standalone upload page and the inline Add/Edit Subject
+     * on BOTH the standalone upload page and the inline Add/Edit Course
      * fields. That's deliberate even though the standalone page always
      * needs a file in the end — SyllabusController::store() enforces "at
      * least one file" itself, after validation, so if curriculum_year were
@@ -72,7 +72,7 @@ class SyllabusFileService
      * @param  array  $validated  output of a request validated against self::validationRules()
      * @return string[] one human-readable note per file processed
      */
-    public function storeFor(Subject $subject, array $validated, int $uploadedByUserId, ?string $curriculumYear): array
+    public function storeFor(Course $course, array $validated, int $uploadedByUserId, ?string $curriculumYear): array
     {
         $notes = [];
 
@@ -82,18 +82,18 @@ class SyllabusFileService
                 continue;
             }
 
-            $storedPath = $file->store("syllabi/{$subject->id}", 'local');
+            $storedPath = $file->store("syllabi/{$course->id}", 'local');
             $absolutePath = Storage::disk('local')->path($storedPath);
             $rawText = $this->extractor->extract($absolutePath, $fileType);
 
-            // Replace, don't append: retire this subject's existing
+            // Replace, don't append: retire this course's existing
             // syllabus of the same file type before adding the new one.
-            Syllabus::where('subject_id', $subject->id)
+            Syllabus::where('course_id', $course->id)
                 ->where('file_type', $fileType)
                 ->delete();
 
             $syllabus = Syllabus::create([
-                'subject_id' => $subject->id,
+                'course_id' => $course->id,
                 'file_path' => $storedPath,
                 'file_type' => $fileType,
                 'original_filename' => $file->getClientOriginalName(),

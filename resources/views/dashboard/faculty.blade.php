@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">My Subjects</h1>
-        <a href="{{ route('subjects.create') }}" class="btn btn-primary btn-sm">+ Add Subject</a>
+        <h1 class="h3 mb-0">My Courses</h1>
+        <a href="{{ route('courses.create') }}" class="btn btn-primary btn-sm">+ Add Course</a>
     </div>
 
     @if ($pendingRequests->isNotEmpty())
@@ -13,7 +13,7 @@
         <ul class="list-group mb-4">
             @foreach ($pendingRequests as $req)
                 <li class="list-group-item">
-                    {{ ucfirst($req->action) }} — {{ $req->subject->subject_code }} — awaiting admin approval
+                    {{ ucfirst($req->action) }} — {{ $req->course->course_code }} — awaiting admin approval
                 </li>
             @endforeach
         </ul>
@@ -29,15 +29,15 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($subjects as $subject)
+            @forelse ($courses as $course)
                 <tr>
-                    <td>{{ $subject->subject_code }}</td>
-                    <td><a href="{{ route('subjects.show', $subject) }}">{{ $subject->title }}</a></td>
-                    <td>{{ $subject->latestSyllabus?->statusLabel() ?? 'Not uploaded' }}</td>
-                    <td><a href="{{ route('syllabi.create', $subject) }}" class="btn btn-sm btn-outline-primary">Upload/Replace</a></td>
+                    <td>{{ $course->course_code }}</td>
+                    <td><a href="{{ route('courses.show', $course) }}">{{ $course->title }}</a></td>
+                    <td>{{ $course->latestSyllabus?->statusLabel() ?? 'Not uploaded' }}</td>
+                    <td><a href="{{ route('syllabi.create', $course) }}" class="btn btn-sm btn-outline-primary">Upload/Replace</a></td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-center text-muted">You have not created any subjects yet.</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">You have not created any courses yet.</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -22,10 +22,10 @@ class User extends Authenticatable
         ];
     }
 
-    /** Subjects this user created (admin/intern act freely; faculty own only what they made). */
-    public function createdSubjects()
+    /** Courses this user created (admin/intern act freely; faculty own only what they made). */
+    public function createdCourses()
     {
-        return $this->hasMany(Subject::class, 'created_by');
+        return $this->hasMany(Course::class, 'created_by');
     }
 
     public function uploadedSyllabi()
@@ -33,9 +33,9 @@ class User extends Authenticatable
         return $this->hasMany(Syllabus::class, 'uploaded_by');
     }
 
-    public function subjectChangeRequests()
+    public function courseChangeRequests()
     {
-        return $this->hasMany(SubjectChangeRequest::class, 'requested_by');
+        return $this->hasMany(CourseChangeRequest::class, 'requested_by');
     }
 
     public function isAdmin(): bool

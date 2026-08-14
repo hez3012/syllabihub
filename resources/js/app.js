@@ -3,7 +3,7 @@ import './chatbot';
 
 import * as bootstrap from 'bootstrap';
 
-// Syllabus PDF preview toggle (subjects.show) — the iframe starts with no
+// Syllabus PDF preview toggle (courses.show) — the iframe starts with no
 // src at all, so the file is never fetched until the faculty member
 // explicitly asks to see it. Event delegation on document so this also
 // covers any rows rendered after page load, not just the ones present now.

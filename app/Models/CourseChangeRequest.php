@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A faculty-submitted request to update or delete a subject they created.
- * Hold-until-approved: the subject itself is untouched until an
+ * A faculty-submitted request to update or delete a course they created.
+ * Hold-until-approved: the course itself is untouched until an
  * admin/intern reviews this row (approve applies `payload`/deletes the
- * subject; reject just marks this row rejected and leaves the subject as-is).
+ * course; reject just marks this row rejected and leaves the course as-is).
  */
-class SubjectChangeRequest extends Model
+class CourseChangeRequest extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'subject_id', 'requested_by', 'action', 'payload',
+        'course_id', 'requested_by', 'action', 'payload',
         'status', 'reviewed_by', 'reviewed_at', 'review_note',
     ];
 
@@ -29,9 +29,9 @@ class SubjectChangeRequest extends Model
         ];
     }
 
-    public function subject()
+    public function course()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Course::class);
     }
 
     public function requester()

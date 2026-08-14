@@ -15,7 +15,7 @@
             <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th># Subjects created</th>
+                <th># Courses created</th>
             </tr>
         </thead>
         <tbody>
@@ -23,7 +23,7 @@
                 <tr>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
-                    <td>{{ $user->created_subjects_count }}</td>
+                    <td>{{ $user->created_courses_count }}</td>
                 </tr>
             @empty
                 <tr><td colspan="3" class="text-center text-muted">No faculty accounts yet.</td></tr>

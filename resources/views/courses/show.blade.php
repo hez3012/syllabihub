@@ -1,30 +1,30 @@
 @extends('layouts.app')
 
-@section('title', $subject->subject_code . ' — SyllabiHub')
+@section('title', $course->course_code . ' — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ route('subjects.index') }}">&larr; Back</a></p>
+    <p><a href="{{ route('courses.index') }}">&larr; Back</a></p>
 
     <div class="d-flex justify-content-between align-items-start">
-        <h1 class="h3">{{ $subject->subject_code }} — {{ $subject->title }}</h1>
+        <h1 class="h3">{{ $course->course_code }} — {{ $course->title }}</h1>
 
         @auth
             @if (auth()->user()->isAdmin() || auth()->user()->isIntern())
                 <div>
-                    <a href="{{ route('subjects.edit', $subject) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
-                    <form method="POST" action="{{ route('subjects.destroy', $subject) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this subject?');">
+                    <a href="{{ route('courses.edit', $course) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
+                    <form method="POST" action="{{ route('courses.destroy', $course) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this course?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Delete</button>
                     </form>
                 </div>
-            @elseif (auth()->user()->isFaculty() && $subject->created_by === auth()->id())
-                @if ($subject->hasPendingChangeRequest())
+            @elseif (auth()->user()->isFaculty() && $course->created_by === auth()->id())
+                @if ($course->hasPendingChangeRequest())
                     <span class="badge bg-warning text-dark">A request is already pending</span>
                 @else
                     <div>
-                        <a href="{{ route('subject-requests.edit-form', $subject) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Request Edit</a>
-                        <form method="POST" action="{{ route('subject-requests.delete', $subject) }}" class="d-inline" onsubmit="return confirm('Request deletion of this subject? An admin will review it first.');">
+                        <a href="{{ route('course-requests.edit-form', $course) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Request Edit</a>
+                        <form method="POST" action="{{ route('course-requests.delete', $course) }}" class="d-inline" onsubmit="return confirm('Request deletion of this course? An admin will review it first.');">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Request Delete</button>
                         </form>
@@ -35,20 +35,20 @@
     </div>
 
     <ul class="list-group list-group-flush mb-4" style="max-width: 32rem;">
-        <li class="list-group-item">Program: {{ $subject->program?->code }}</li>
-        <li class="list-group-item">Year Level: {{ $subject->yearLevelLabel() }}</li>
-        <li class="list-group-item">Semester: {{ $subject->semesterLabel() }}</li>
-        <li class="list-group-item">Prerequisite: {{ $subject->prerequisite ?? '—' }}</li>
-        <li class="list-group-item">Co-requisite: {{ $subject->corequisite ?? '—' }}</li>
-        <li class="list-group-item">Lecture Hours: {{ $subject->lecture_hours ?? '—' }}</li>
-        <li class="list-group-item">Lab Hours: {{ $subject->lab_hours ?? '—' }}</li>
-        <li class="list-group-item">Credited Units: {{ $subject->credited_units ?? '—' }}</li>
-        <li class="list-group-item">Added by: {{ $subject->creator?->name ?? 'Seeded/legacy (no owner)' }}</li>
+        <li class="list-group-item">Program: {{ $course->program?->code }}</li>
+        <li class="list-group-item">Year Level: {{ $course->yearLevelLabel() }}</li>
+        <li class="list-group-item">Semester: {{ $course->semesterLabel() }}</li>
+        <li class="list-group-item">Prerequisite: {{ $course->prerequisite ?? '—' }}</li>
+        <li class="list-group-item">Co-requisite: {{ $course->corequisite ?? '—' }}</li>
+        <li class="list-group-item">Lecture Hours: {{ $course->lecture_hours ?? '—' }}</li>
+        <li class="list-group-item">Lab Hours: {{ $course->lab_hours ?? '—' }}</li>
+        <li class="list-group-item">Credited Units: {{ $course->credited_units ?? '—' }}</li>
+        <li class="list-group-item">Added by: {{ $course->creator?->name ?? 'Seeded/legacy (no owner)' }}</li>
     </ul>
 
     <h2 class="h5">Syllabi</h2>
     <ul class="list-group mb-3">
-        @forelse ($subject->syllabi as $syllabus)
+        @forelse ($course->syllabi as $syllabus)
             <li class="list-group-item">
                 <div class="d-flex justify-content-between align-items-center">
                     <span>
@@ -83,6 +83,6 @@
         @endforelse
     </ul>
 
-    <a href="{{ route('syllabi.create', $subject) }}" class="btn btn-primary">Upload/Replace Syllabus</a>
+    <a href="{{ route('syllabi.create', $course) }}" class="btn btn-primary">Upload/Replace Syllabus</a>
     <span class="text-muted ms-2">(requires login: admin, faculty, or intern)</span>
 @endsection

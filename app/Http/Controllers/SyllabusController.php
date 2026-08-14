@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Subject;
+use App\Models\Course;
 use App\Models\Syllabus;
 use App\Services\SyllabusFileService;
 use Illuminate\Http\RedirectResponse;
@@ -20,8 +20,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * guessable public URLs. All three require auth (CLAUDE.md §7).
  *
  * This is the "fast path" for faculty to jump straight to uploading —
- * SubjectController::store()/update() also accept these same file_pdf/
- * file_docx fields inline on the Add/Edit Subject forms, both delegating
+ * CourseController::store()/update() also accept these same file_pdf/
+ * file_docx fields inline on the Add/Edit Course forms, both delegating
  * to SyllabusFileService so the actual upload/replace logic lives in one
  * place. See that service for the validation rules and "replace, don't
  * append" behavior.
@@ -48,15 +48,15 @@ class SyllabusController extends Controller
             ->all();
     }
 
-    public function create(Subject $subject): View
+    public function create(Course $course): View
     {
         return view('syllabi.upload', [
-            'subject' => $subject,
+            'course' => $course,
             'curriculumYears' => self::curriculumYearOptions(),
         ]);
     }
 
-    public function store(Request $request, Subject $subject): RedirectResponse
+    public function store(Request $request, Course $course): RedirectResponse
     {
         $validated = $request->validate(array_merge(
             SyllabusFileService::validationRules(),
@@ -70,14 +70,14 @@ class SyllabusController extends Controller
         }
 
         $notes = $this->files->storeFor(
-            $subject,
+            $course,
             $validated,
             $request->user()->id,
             $validated['curriculum_year'] ?? null
         );
 
         return redirect()
-            ->route('subjects.show', $subject)
+            ->route('courses.show', $course)
             ->with('status', 'Uploaded: ' . implode(', ', $notes) . '.');
     }
 
@@ -85,8 +85,8 @@ class SyllabusController extends Controller
     {
         abort_if(!Storage::disk('local')->exists($syllabus->file_path), 404);
 
-        $subject = $syllabus->subject;
-        $label = $subject ? $subject->subject_code : 'syllabus';
+        $course = $syllabus->course;
+        $label = $course ? $course->course_code : 'syllabus';
         $year = $syllabus->curriculum_year ? "-{$syllabus->curriculum_year}" : '';
         $downloadName = str_replace(' ', '_', $label) . $year . '.' . $syllabus->file_type;
 

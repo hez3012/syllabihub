@@ -7,8 +7,8 @@
 
     <p>
         <a href="{{ route('faculty-accounts.index') }}" class="btn btn-outline-primary btn-sm">Manage Faculty Accounts</a>
-        <a href="{{ route('subject-requests.index') }}" class="btn btn-outline-warning btn-sm">
-            Subject Change Requests
+        <a href="{{ route('course-requests.index') }}" class="btn btn-outline-warning btn-sm">
+            Course Change Requests
             @if ($pendingRequestCount > 0)
                 <span class="badge bg-danger">{{ $pendingRequestCount }}</span>
             @endif
@@ -19,8 +19,8 @@
     <div class="row mb-4" style="max-width: 40rem;">
         <div class="col">
             <div class="border rounded p-3 text-center">
-                <div class="fs-4">{{ $totalSubjects }}</div>
-                <div class="text-muted small">Total subjects</div>
+                <div class="fs-4">{{ $totalCourses }}</div>
+                <div class="text-muted small">Total courses</div>
             </div>
         </div>
         <div class="col">
@@ -41,7 +41,7 @@
     <table class="table table-striped table-bordered align-middle">
         <thead>
             <tr>
-                <th>Subject</th>
+                <th>Course</th>
                 <th>Status</th>
                 <th>Uploaded by</th>
                 <th>Date</th>
@@ -50,7 +50,7 @@
         <tbody>
             @forelse ($recentUploads as $syllabus)
                 <tr>
-                    <td>{{ $syllabus->subject?->subject_code }}</td>
+                    <td>{{ $syllabus->course?->course_code }}</td>
                     <td>{{ $syllabus->statusLabel() }}</td>
                     <td>{{ $syllabus->uploader?->name ?? '—' }}</td>
                     <td>{{ $syllabus->created_at?->format('Y-m-d H:i') }}</td>

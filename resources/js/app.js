@@ -26,3 +26,39 @@ document.addEventListener('click', function (event) {
     button.querySelector('.js-syllabus-preview-label').textContent = nowHidden ? 'Preview' : 'Hide Preview';
     button.querySelector('.bi').className = nowHidden ? 'bi bi-eye' : 'bi bi-eye-slash';
 });
+
+// Submit-button loading state — every form gets its primary submit
+// button disabled + spinner-labeled the moment it's submitted, so a
+// slow request can't be double-clicked and there's visible feedback
+// that something is happening. Skipped for forms with data-no-loading
+// (none currently) in case a future form needs to opt out.
+document.addEventListener('submit', function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || form.dataset.noLoading) {
+        return;
+    }
+
+    const button = form.querySelector('button[type="submit"]');
+    if (!button || button.disabled) {
+        return;
+    }
+
+    button.dataset.originalHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="btn-spinner"></span>Please wait…';
+});
+
+// Toast notifications — success toasts auto-dismiss after 5s, error
+// toasts stay until manually closed since they need to actually be read.
+document.querySelectorAll('.toast-item').forEach(function (toast) {
+    const dismiss = () => {
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 250);
+    };
+
+    toast.querySelector('.toast-close')?.addEventListener('click', dismiss);
+
+    if (toast.classList.contains('toast-success')) {
+        setTimeout(dismiss, 5000);
+    }
+});

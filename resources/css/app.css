@@ -1,13 +1,592 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+:root {
+    --pup-red: #7A0C0C;
+    --pup-red-bright: #A91D1D;
+    --pup-gold: #C9A227;
+    --pup-ink: #2A2222;
+    --pup-bg: #F8F5F2;
+    --pup-border: #e5dcd6;
+    --pup-muted: #6b5f5a;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--pup-bg);
+    color: var(--pup-ink);
+}
+
+h1, h2, h3, h4, h5, h6,
+.app-brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+}
+
+a {
+    color: var(--pup-red);
+}
+
+/* --- Sidebar --- */
+.app-sidebar {
+    background: linear-gradient(180deg, var(--pup-red) 0%, #5C0909 100%);
+    color: #fff;
+}
+
+.app-sidebar .app-brand {
+    color: #fff;
+    letter-spacing: .02em;
+}
+
+.app-sidebar hr {
+    border-color: rgba(255, 255, 255, .25);
+}
+
+.app-sidebar .nav-link {
+    color: rgba(255, 255, 255, .85);
+    border-radius: 8px;
+    font-weight: 500;
+    margin-bottom: .15rem;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.app-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+}
+
+.app-sidebar .nav-link.active {
+    background: var(--pup-gold);
+    color: var(--pup-ink);
+    font-weight: 600;
+}
+
+.app-sidebar .fw-semibold {
+    color: #fff;
+}
+
+/* ============================================================
+   Buttons — every custom button gets a subtle lift + shadow on
+   hover instead of a flat, static color swap, so the interface
+   feels responsive to the cursor rather than static/"dry".
+   ============================================================ */
+.btn-pup-primary,
+.btn-pup-outline-dark,
+.btn-pup-danger,
+.btn-pup-success,
+.btn-pup-warning {
+    transition: transform .12s ease, box-shadow .12s ease, background-color .15s ease, color .15s ease;
+    font-weight: 500;
+}
+
+.btn-pup-primary:hover,
+.btn-pup-outline-dark:hover,
+.btn-pup-danger:hover,
+.btn-pup-success:hover,
+.btn-pup-warning:hover {
+    transform: translateY(-1px);
+}
+
+.btn-pup-primary:active,
+.btn-pup-outline-dark:active,
+.btn-pup-danger:active,
+.btn-pup-success:active,
+.btn-pup-warning:active {
+    transform: translateY(0);
+}
+
+.btn-pup-primary {
+    background: var(--pup-red);
+    border-color: var(--pup-red);
+    color: #fff;
+}
+
+.btn-pup-primary:hover {
+    background: var(--pup-red-bright);
+    border-color: var(--pup-red-bright);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(122, 12, 12, .28);
+}
+
+.btn-pup-outline {
+    border: 1px solid rgba(255, 255, 255, .5);
+    color: #fff;
+}
+
+.btn-pup-outline:hover {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+}
+
+.btn-pup-outline-dark {
+    border: 1px solid var(--pup-red);
+    color: var(--pup-red);
+    background: #fff;
+}
+
+.btn-pup-outline-dark:hover {
+    background: var(--pup-red);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(122, 12, 12, .2);
+}
+
+.btn-pup-danger {
+    background: #fff;
+    border: 1px solid #B3261E;
+    color: #B3261E;
+}
+
+.btn-pup-danger:hover {
+    background: #B3261E;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(179, 38, 30, .25);
+}
+
+.btn-pup-success {
+    background: #1F7A3D;
+    border: 1px solid #1F7A3D;
+    color: #fff;
+}
+
+.btn-pup-success:hover {
+    background: #185F30;
+    border-color: #185F30;
+    box-shadow: 0 4px 12px rgba(31, 122, 61, .28);
+}
+
+.btn-pup-warning {
+    background: #fff;
+    border: 1px solid var(--pup-gold);
+    color: #7A5C0C;
+}
+
+.btn-pup-warning:hover {
+    background: var(--pup-gold);
+    color: #4a3806;
+    box-shadow: 0 4px 12px rgba(201, 162, 39, .3);
+}
+
+/* --- Table links / course codes: signature touch --- */
+.course-code-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .8rem;
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-left: 3px solid var(--pup-red);
+    padding: .15rem .5rem;
+    border-radius: 4px;
+    color: var(--pup-red);
+    display: inline-block;
+}
+
+/* ============================================================
+   Shared page chrome — hero header, back link, section cards
+   ============================================================ */
+.page-hero {
+    margin-bottom: 1.75rem;
+}
+
+.page-hero .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .75rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--pup-red);
+    font-weight: 500;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    color: var(--pup-muted);
+    text-decoration: none;
+    font-size: .85rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.back-link:hover {
+    color: var(--pup-red);
+}
+
+.content-card {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 12px;
+    padding: 1.75rem;
+}
+
+.form-section-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 1.75rem 0 .25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--pup-border);
+}
+
+.form-section-title:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.form-hint {
+    color: var(--pup-muted);
+    font-size: .85rem;
+    margin-bottom: 1rem;
+}
+
+/* --- Empty states --- */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--pup-muted);
+}
+
+.empty-state i {
+    font-size: 2rem;
+    color: var(--pup-border);
+    display: block;
+    margin-bottom: .75rem;
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+/* ============================================================
+   Stat strip (dashboard + courses)
+   ============================================================ */
+.stat-strip {
+    display: flex;
+    gap: .75rem;
+    margin: 1rem 0 1.5rem;
+    flex-wrap: wrap;
+}
+
+.stat-pill {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 10px;
+    padding: .6rem 1rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+.stat-pill .stat-value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--pup-red);
+    line-height: 1.1;
+}
+
+.stat-pill .stat-label {
+    font-size: .72rem;
+    color: var(--pup-muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.stat-pill-alert {
+    border-color: var(--pup-red);
+    background: #FDF1EE;
+}
+
+.stat-pill-alert .stat-value {
+    color: var(--pup-red-bright);
+}
+
+/* ============================================================
+   Courses toolbar + table
+   ============================================================ */
+.courses-toolbar {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.courses-toolbar .form-label {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--pup-muted);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    margin-bottom: .25rem;
+}
+
+.courses-table-wrap {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.courses-table {
+    margin-bottom: 0;
+}
+
+.courses-table thead th {
+    background: var(--pup-bg);
+    border-bottom: 2px solid var(--pup-border);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--pup-muted);
+    font-weight: 600;
+    padding: .8rem 1rem;
+}
+
+.courses-table tbody td {
+    padding: .8rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0e9e4;
+}
+
+.courses-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.courses-table tbody tr:hover {
+    background: #FBF3EC;
+}
+
+.program-pill {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+    letter-spacing: .02em;
+}
+
+.program-pill-bsit {
+    background: #FDECEC;
+    color: var(--pup-red);
+}
+
+.program-pill-dit {
+    background: #F3EBD8;
+    color: #7A5C0C;
+}
+
+.syllabus-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .82rem;
+    font-weight: 500;
+}
+
+.syllabus-dot::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.syllabus-dot-yes::before {
+    background: #2E8B45;
+}
+
+.syllabus-dot-no::before {
+    background: #C9BEB6;
+}
+
+/* --- File list (edit course: existing syllabi) --- */
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.file-list-item {
+    background: var(--pup-bg);
+    border: 1px solid var(--pup-border);
+    border-radius: 10px;
+    padding: .6rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+}
+
+.file-list-item .file-name {
+    font-size: .88rem;
+    font-weight: 500;
+}
+
+/* --- Course detail page --- */
+.detail-meta-list {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.detail-meta-list .meta-row {
+    display: flex;
+    justify-content: space-between;
+    padding: .7rem 1.25rem;
+    border-bottom: 1px solid #f0e9e4;
+    font-size: .9rem;
+}
+
+.detail-meta-list .meta-row:last-child {
+    border-bottom: none;
+}
+
+.detail-meta-list .meta-label {
+    color: var(--pup-muted);
+    font-weight: 500;
+}
+
+.syllabus-list-item {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: .75rem;
+}
+
+.syllabus-list-item .syllabus-title {
+    font-weight: 600;
+    font-size: .92rem;
+}
+
+.syllabus-list-item .syllabus-meta {
+    color: var(--pup-muted);
+    font-size: .82rem;
+}
+
+/* --- Change-request cards (admin/course-requests) --- */
+.request-card {
+    background: #fff;
+    border: 1px solid var(--pup-border);
+    border-left: 4px solid var(--pup-gold);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.request-card .request-meta {
+    color: var(--pup-muted);
+    font-size: .85rem;
+    margin-bottom: .75rem;
+}
+
+.request-diff-table th,
+.request-diff-table td {
+    font-size: .85rem;
+}
+
+/* --- Auth pages (login, forgot/reset password) --- */
+.auth-shell,
+.auth-shell-stacked {
+    display: flex;
+    min-height: 100vh;
+}
+
+.auth-shell-stacked {
+    flex-direction: column;
+}
+
+.auth-header-banner {
+    width: 100%;
+    line-height: 0;
+}
+
+.auth-header-img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    display: block;
+}
+
+.auth-side-panel {
+    flex: 0 0 38%;
+    line-height: 0;
+}
+
+.auth-side-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.auth-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--pup-bg);
+}
+
+.auth-form-inner {
+    width: 100%;
+    max-width: 380px;
+}
+
+.auth-mobile-brand {
+    display: block;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--pup-red);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+}
+
+.auth-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    margin-bottom: .25rem;
+}
+
+.auth-subtitle {
+    color: var(--pup-muted);
+    font-size: .9rem;
+    margin-bottom: 1.5rem;
+}
+
+.auth-link {
+    color: var(--pup-red);
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* --- Dashboard --- */
+.dashboard-actions {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.section-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: .75rem;
+}
+
 /* ============================================================
    "Sage" floating chat widget (layouts/app.blade.php)
    Structurally plain (test-stub) — animation/transition only,
    per Rico 2026-08-12. Real visual design is the frontend team's
    job (CLAUDE.md §2/§6).
    ============================================================ */
-
 .chatbot-widget {
     position: fixed;
     right: 1.5rem;
@@ -16,21 +595,6 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    /* Real bug (Rico, 2026-08-13): this container is sized by its
-       CHILDREN (the 340x460 .chatbot-panel + the FAB), so even while
-       closed it occupies that full ~340x528 box in the page's fixed
-       layer — .chatbot-panel already sets pointer-events:none on
-       itself while closed, but that never extended to THIS element,
-       so the empty/transparent area of the container itself silently
-       absorbed every click underneath it (Preview/Download/Full
-       Screen on any page whose content happens to sit under that
-       corner) with no error, no network request, nothing — clicks
-       just landed on a plain, non-interactive <div> instead of the
-       real page content one layer down. none here restores normal
-       click-through; .chatbot-fab re-enables itself below, and
-       .chatbot-panel already re-enables itself while open further
-       down this file — both still need their own pointer-events:auto,
-       since "none" here would otherwise cascade to them too. */
     pointer-events: none;
 }
 
@@ -74,9 +638,6 @@
     flex-direction: column;
     overflow: hidden;
     margin-bottom: .75rem;
-
-    /* Closed state: scaled down, invisible, non-interactive, growing
-       out from the FAB's corner rather than just appearing/disappearing. */
     transform: scale(.9) translateY(12px);
     opacity: 0;
     pointer-events: none;
@@ -126,9 +687,6 @@
     opacity: 1;
 }
 
-/* Sage reply-language selector (2026-08-13) — small, fits the same blue
-   header as the icon buttons beside it rather than looking like a
-   default OS-styled <select> dropped into a colored bar. */
 .chatbot-language-select {
     background: rgba(255, 255, 255, .15);
     border: 1px solid rgba(255, 255, 255, .4);
@@ -193,10 +751,6 @@
     border-bottom-left-radius: 4px;
 }
 
-/* Assistant replies render as real HTML now (see chatbot.js
-   formatAssistantHtml()) instead of plain textContent, so "**bold**"
-   and "- item" lines show as actual emphasis/bullets instead of
-   literal asterisks and dashes with no spacing. */
 .chatbot-bubble-list {
     margin: .35rem 0;
     padding-left: 1.15rem;
@@ -210,8 +764,6 @@
     margin-bottom: 0;
 }
 
-/* Entrance animation — every new bubble (user or assistant) rises and
-   fades in instead of just popping into place. */
 .chatbot-msg-in {
     animation: chatbot-msg-in .25s ease both;
 }
@@ -221,8 +773,6 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* "Typing..." indicator — three dots bouncing in sequence while a reply
-   is in flight. */
 .chatbot-typing-dot {
     width: 6px;
     height: 6px;
@@ -276,4 +826,153 @@
     border-top: 1px solid #e9ecef;
     background: #fff;
     flex-shrink: 0;
+}
+
+/* ============================================================
+   Program segmented toggle (Browse Courses filter)
+   ============================================================ */
+.program-toggle {
+    display: inline-flex;
+    background: var(--pup-bg);
+    border: 1px solid var(--pup-border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.program-toggle-btn {
+    padding: .4rem .9rem;
+    border-radius: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--pup-muted);
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.program-toggle-btn:hover {
+    background: #fff;
+    color: var(--pup-ink);
+}
+
+.program-toggle-btn.active {
+    background: #fff;
+    color: var(--pup-ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+.program-toggle-btn.active.program-toggle-bsit {
+    color: var(--pup-red);
+    border-bottom: 2px solid var(--pup-red);
+}
+
+.program-toggle-btn.active.program-toggle-dit {
+    color: #7A5C0C;
+    border-bottom: 2px solid var(--pup-gold);
+}
+
+/* ============================================================
+   Toast notifications (replaces plain alert bars)
+   ============================================================ */
+.toast-stack {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    max-width: 360px;
+}
+
+.toast-item {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    padding: .85rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    font-size: .88rem;
+    border-left: 4px solid var(--pup-border);
+    animation: toast-in .25s ease both;
+}
+
+.toast-success {
+    border-left-color: #1F7A3D;
+}
+
+.toast-success i {
+    color: #1F7A3D;
+}
+
+.toast-error {
+    border-left-color: #B3261E;
+}
+
+.toast-error i {
+    color: #B3261E;
+}
+
+.toast-item i {
+    font-size: 1.1rem;
+    margin-top: .1rem;
+}
+
+.toast-item .toast-body {
+    flex: 1;
+}
+
+.toast-item .toast-body ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--pup-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+
+.toast-hide {
+    animation: toast-out .25s ease both;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(20px); }
+}
+
+/* ============================================================
+   Submit-button loading state
+   ============================================================ */
+.btn-spinner {
+    display: inline-block;
+    width: .8rem;
+    height: .8rem;
+    border: 2px solid rgba(255,255,255,.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btn-spin .6s linear infinite;
+    margin-right: .4rem;
+    vertical-align: -1px;
+}
+
+.btn-pup-outline-dark .btn-spinner,
+.btn-pup-warning .btn-spinner {
+    border-color: rgba(122,12,12,.3);
+    border-top-color: var(--pup-red);
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
 }

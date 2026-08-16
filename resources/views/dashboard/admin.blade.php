@@ -3,61 +3,59 @@
 @section('title', 'Admin Dashboard — SyllabiHub')
 
 @section('content')
-    <h1 class="h3 mb-4">Admin/Intern Dashboard</h1>
+    <div class="page-hero">
+        <div class="eyebrow">Admin / Intern</div>
+        <h1 class="h3 mb-0">Dashboard</h1>
+    </div>
 
-    <p>
-        <a href="{{ route('faculty-accounts.index') }}" class="btn btn-outline-primary btn-sm">Manage Faculty Accounts</a>
-        <a href="{{ route('course-requests.index') }}" class="btn btn-outline-warning btn-sm">
+    <div class="dashboard-actions mb-4">
+        <a href="{{ route('faculty-accounts.index') }}" class="btn btn-pup-outline-dark btn-sm">Manage Faculty Accounts</a>
+        <a href="{{ route('course-requests.index') }}" class="btn btn-pup-outline-dark btn-sm">
             Course Change Requests
             @if ($pendingRequestCount > 0)
-                <span class="badge bg-danger">{{ $pendingRequestCount }}</span>
+                <span class="badge bg-danger ms-1">{{ $pendingRequestCount }}</span>
             @endif
         </a>
-    </p>
+    </div>
 
-    <h2 class="h5 mt-4">Tracker</h2>
-    <div class="row mb-4" style="max-width: 40rem;">
-        <div class="col">
-            <div class="border rounded p-3 text-center">
-                <div class="fs-4">{{ $totalCourses }}</div>
-                <div class="text-muted small">Total courses</div>
-            </div>
+    <div class="stat-strip">
+        <div class="stat-pill">
+            <span class="stat-value">{{ $totalCourses }}</span>
+            <span class="stat-label">Total Courses</span>
         </div>
-        <div class="col">
-            <div class="border rounded p-3 text-center">
-                <div class="fs-4">{{ $withSyllabus }}</div>
-                <div class="text-muted small">With syllabus</div>
-            </div>
+        <div class="stat-pill">
+            <span class="stat-value">{{ $withSyllabus }}</span>
+            <span class="stat-label">With Syllabus</span>
         </div>
-        <div class="col">
-            <div class="border rounded p-3 text-center">
-                <div class="fs-4">{{ $missing }}</div>
-                <div class="text-muted small">Missing</div>
-            </div>
+        <div class="stat-pill stat-pill-alert">
+            <span class="stat-value">{{ $missing }}</span>
+            <span class="stat-label">Missing a Syllabus</span>
         </div>
     </div>
 
-    <h2 class="h5">Recent uploads</h2>
-    <table class="table table-striped table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Status</th>
-                <th>Uploaded by</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($recentUploads as $syllabus)
+    <h2 class="section-heading">Recent Uploads</h2>
+    <div class="courses-table-wrap">
+        <table class="table courses-table align-middle mb-0">
+            <thead>
                 <tr>
-                    <td>{{ $syllabus->course?->course_code }}</td>
-                    <td>{{ $syllabus->statusLabel() }}</td>
-                    <td>{{ $syllabus->uploader?->name ?? '—' }}</td>
-                    <td>{{ $syllabus->created_at?->format('Y-m-d H:i') }}</td>
+                    <th>Course</th>
+                    <th>Status</th>
+                    <th>Uploaded By</th>
+                    <th>Date</th>
                 </tr>
-            @empty
-                <tr><td colspan="4" class="text-center text-muted">No uploads yet.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($recentUploads as $syllabus)
+                    <tr>
+                        <td><span class="course-code-tag">{{ $syllabus->course?->course_code }}</span></td>
+                        <td>{{ $syllabus->statusLabel() }}</td>
+                        <td>{{ $syllabus->uploader?->name ?? '—' }}</td>
+                        <td class="text-muted small">{{ $syllabus->created_at?->format('Y-m-d H:i') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="text-center text-muted py-4">No uploads yet.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 @endsection

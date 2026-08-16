@@ -37,31 +37,38 @@ class CourseController extends Controller
     }
 
     public function index(Request $request): View
-    {
-        $validated = $request->validate([
-            'program' => ['nullable', 'string', 'max:20'],
-            'year_level' => ['nullable', 'integer', 'min:1', 'max:4'],
-            'semester' => ['nullable', 'in:1st,2nd,summer'],
-        ]);
+{
+    $validated = $request->validate([
+        'program' => ['nullable', 'string', 'max:20'],
+        'year_level' => ['nullable', 'integer', 'min:1', 'max:4'],
+        'semester' => ['nullable', 'in:1st,2nd,summer'],
+    ]);
 
-        $courses = Course::query()
-            ->with(['program', 'latestSyllabus'])
-            ->when($validated['program'] ?? null, fn ($q, $code) => $q->whereHas(
-                'program',
-                fn ($p) => $p->where('code', $code)
-            ))
-            ->when($validated['year_level'] ?? null, fn ($q, $year) => $q->where('year_level', $year))
-            ->when($validated['semester'] ?? null, fn ($q, $sem) => $q->where('semester', $sem))
-            ->orderBy('year_level')
-            ->orderBy('course_code')
-            ->paginate(20)
-            ->withQueryString();
+    $baseQuery = Course::query()
+        ->when($validated['program'] ?? null, fn ($q, $code) => $q->whereHas(
+            'program',
+            fn ($p) => $p->where('code', $code)
+        ))
+        ->when($validated['year_level'] ?? null, fn ($q, $year) => $q->where('year_level', $year))
+        ->when($validated['semester'] ?? null, fn ($q, $sem) => $q->where('semester', $sem));
 
-        return view('courses.index', [
-            'courses' => $courses,
-            'filters' => $validated,
-        ]);
-    }
+    // True count across ALL matching courses (not just the current page) —
+    // used for the "with syllabus" stat on the Browse Courses page.
+    $withSyllabusCount = (clone $baseQuery)->whereHas('syllabi')->count();
+
+    $courses = (clone $baseQuery)
+        ->with(['program', 'latestSyllabus'])
+        ->orderBy('year_level')
+        ->orderBy('course_code')
+        ->paginate(20)
+        ->withQueryString();
+
+    return view('courses.index', [
+        'courses' => $courses,
+        'filters' => $validated,
+        'withSyllabusCount' => $withSyllabusCount,
+    ]);
+}
 
     public function show(Course $course): View
     {

@@ -3,31 +3,41 @@
 @section('title', 'Faculty Accounts — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ route('dashboard.admin') }}">&larr; Back</a></p>
+    <a href="{{ route('dashboard.admin') }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">Faculty Accounts</h1>
-        <a href="{{ route('faculty-accounts.create') }}" class="btn btn-primary btn-sm">+ Create Faculty Account</a>
+    <div class="page-hero d-flex justify-content-between align-items-end flex-wrap gap-2">
+        <div>
+            <div class="eyebrow">Admin</div>
+            <h1 class="h3 mb-0">Faculty Accounts</h1>
+        </div>
+        <a href="{{ route('faculty-accounts.create') }}" class="btn btn-pup-primary btn-sm"><i class="bi bi-person-plus"></i> Create Faculty Account</a>
     </div>
 
-    <table class="table table-striped table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th># Courses created</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($faculty as $user)
+    <div class="courses-table-wrap">
+        <table class="table courses-table align-middle mb-0">
+            <thead>
                 <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ $user->created_courses_count }}</td>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th># Courses Created</th>
                 </tr>
-            @empty
-                <tr><td colspan="3" class="text-center text-muted">No faculty accounts yet.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($faculty as $user)
+                    <tr>
+                        <td class="fw-medium">{{ $user->name }}</td>
+                        <td class="text-muted">{{ $user->email }}</td>
+                        <td><span class="course-code-tag">{{ $user->created_courses_count }}</span></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3" class="p-0">
+                        <div class="empty-state">
+                            <i class="bi bi-people"></i>
+                            <p>No faculty accounts yet.</p>
+                        </div>
+                    </td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 @endsection

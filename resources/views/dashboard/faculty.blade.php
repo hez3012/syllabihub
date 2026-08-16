@@ -3,42 +3,57 @@
 @section('title', 'Faculty Dashboard — SyllabiHub')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">My Courses</h1>
-        <a href="{{ route('courses.create') }}" class="btn btn-primary btn-sm">+ Add Course</a>
+    <div class="page-hero d-flex justify-content-between align-items-end flex-wrap gap-2">
+        <div>
+            <div class="eyebrow">Faculty</div>
+            <h1 class="h3 mb-0">My Courses</h1>
+        </div>
+        <a href="{{ route('courses.create') }}" class="btn btn-pup-primary btn-sm">+ Add Course</a>
     </div>
 
     @if ($pendingRequests->isNotEmpty())
-        <h2 class="h6">My pending requests</h2>
-        <ul class="list-group mb-4">
+        <h2 class="section-heading">Pending Requests</h2>
+        <div class="pending-requests-list mb-4">
             @foreach ($pendingRequests as $req)
-                <li class="list-group-item">
-                    {{ ucfirst($req->action) }} — {{ $req->course->course_code }} — awaiting admin approval
-                </li>
+                <div class="pending-request-item">
+                    <span class="badge bg-warning text-dark">{{ ucfirst($req->action) }}</span>
+                    <span class="course-code-tag">{{ $req->course->course_code }}</span>
+                    <span class="text-muted small">Awaiting admin approval</span>
+                </div>
             @endforeach
-        </ul>
+        </div>
     @endif
 
-    <table class="table table-striped table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Code</th>
-                <th>Title</th>
-                <th>Syllabus status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($courses as $course)
+    <div class="courses-table-wrap">
+        <table class="table courses-table align-middle mb-0">
+            <thead>
                 <tr>
-                    <td>{{ $course->course_code }}</td>
-                    <td><a href="{{ route('courses.show', $course) }}">{{ $course->title }}</a></td>
-                    <td>{{ $course->latestSyllabus?->statusLabel() ?? 'Not uploaded' }}</td>
-                    <td><a href="{{ route('syllabi.create', $course) }}" class="btn btn-sm btn-outline-primary">Upload/Replace</a></td>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Syllabus Status</th>
+                    <th></th>
                 </tr>
-            @empty
-                <tr><td colspan="4" class="text-center text-muted">You have not created any courses yet.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($courses as $course)
+                    <tr>
+                        <td><span class="course-code-tag">{{ $course->course_code }}</span></td>
+                        <td><a href="{{ route('courses.show', $course) }}" class="text-decoration-none fw-medium">{{ $course->title }}</a></td>
+                        <td>
+                            @if ($course->latestSyllabus)
+                                <span class="syllabus-dot syllabus-dot-yes">{{ $course->latestSyllabus->statusLabel() }}</span>
+                            @else
+                                <span class="syllabus-dot syllabus-dot-no">Not uploaded</span>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ route('syllabi.create', $course) }}" class="btn btn-sm btn-pup-outline-dark">Upload/Replace</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="text-center text-muted py-4">You have not created any courses yet.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 @endsection

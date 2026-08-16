@@ -3,30 +3,33 @@
 @section('title', $course->course_code . ' — SyllabiHub')
 
 @section('content')
-    <p><a href="{{ route('courses.index') }}">&larr; Back</a></p>
+    <a href="{{ route('courses.index') }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Courses</a>
 
-    <div class="d-flex justify-content-between align-items-start">
-        <h1 class="h3">{{ $course->course_code }} — {{ $course->title }}</h1>
+    <div class="page-hero d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+            <div class="eyebrow">{{ $course->program?->code }} &middot; {{ $course->yearLevelLabel() }}</div>
+            <h1 class="h3 mb-0">{{ $course->course_code }} — {{ $course->title }}</h1>
+        </div>
 
         @auth
             @if (auth()->user()->isAdmin() || auth()->user()->isIntern())
-                <div>
-                    <a href="{{ route('courses.edit', $course) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
-                    <form method="POST" action="{{ route('courses.destroy', $course) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this course?');">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('courses.edit', $course) }}" class="btn btn-pup-warning btn-sm"><i class="bi bi-pencil-square"></i> Edit</a>
+                    <form method="POST" action="{{ route('courses.destroy', $course) }}" onsubmit="return confirm('Are you sure you want to delete this course?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                        <button type="submit" class="btn btn-pup-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
                     </form>
                 </div>
             @elseif (auth()->user()->isFaculty() && $course->created_by === auth()->id())
                 @if ($course->hasPendingChangeRequest())
-                    <span class="badge bg-warning text-dark">A request is already pending</span>
+                    <span class="badge bg-warning text-dark align-self-start">A request is already pending</span>
                 @else
-                    <div>
-                        <a href="{{ route('course-requests.edit-form', $course) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Request Edit</a>
-                        <form method="POST" action="{{ route('course-requests.delete', $course) }}" class="d-inline" onsubmit="return confirm('Request deletion of this course? An admin will review it first.');">
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('course-requests.edit-form', $course) }}" class="btn btn-pup-warning btn-sm"><i class="bi bi-pencil-square"></i> Request Edit</a>
+                        <form method="POST" action="{{ route('course-requests.delete', $course) }}" onsubmit="return confirm('Request deletion of this course? An admin will review it first.');">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Request Delete</button>
+                            <button type="submit" class="btn btn-pup-danger btn-sm"><i class="bi bi-trash"></i> Request Delete</button>
                         </form>
                     </div>
                 @endif
@@ -34,55 +37,58 @@
         @endauth
     </div>
 
-    <ul class="list-group list-group-flush mb-4" style="max-width: 32rem;">
-        <li class="list-group-item">Program: {{ $course->program?->code }}</li>
-        <li class="list-group-item">Year Level: {{ $course->yearLevelLabel() }}</li>
-        <li class="list-group-item">Semester: {{ $course->semesterLabel() }}</li>
-        <li class="list-group-item">Prerequisite: {{ $course->prerequisite ?? '—' }}</li>
-        <li class="list-group-item">Co-requisite: {{ $course->corequisite ?? '—' }}</li>
-        <li class="list-group-item">Lecture Hours: {{ $course->lecture_hours ?? '—' }}</li>
-        <li class="list-group-item">Lab Hours: {{ $course->lab_hours ?? '—' }}</li>
-        <li class="list-group-item">Credited Units: {{ $course->credited_units ?? '—' }}</li>
-        <li class="list-group-item">Added by: {{ $course->creator?->name ?? 'Seeded/legacy (no owner)' }}</li>
-    </ul>
+    <div class="detail-meta-list">
+        <div class="meta-row"><span class="meta-label">Program</span><span>{{ $course->program?->code }}</span></div>
+        <div class="meta-row"><span class="meta-label">Year Level</span><span>{{ $course->yearLevelLabel() }}</span></div>
+        <div class="meta-row"><span class="meta-label">Semester</span><span>{{ $course->semesterLabel() }}</span></div>
+        <div class="meta-row"><span class="meta-label">Prerequisite</span><span>{{ $course->prerequisite ?? '—' }}</span></div>
+        <div class="meta-row"><span class="meta-label">Co-requisite</span><span>{{ $course->corequisite ?? '—' }}</span></div>
+        <div class="meta-row"><span class="meta-label">Lecture Hours</span><span>{{ $course->lecture_hours ?? '—' }}</span></div>
+        <div class="meta-row"><span class="meta-label">Lab Hours</span><span>{{ $course->lab_hours ?? '—' }}</span></div>
+        <div class="meta-row"><span class="meta-label">Credited Units</span><span>{{ $course->credited_units ?? '—' }}</span></div>
+        <div class="meta-row"><span class="meta-label">Added By</span><span>{{ $course->creator?->name ?? 'Seeded/legacy (no owner)' }}</span></div>
+    </div>
 
-    <h2 class="h5">Syllabi</h2>
-    <ul class="list-group mb-3">
-        @forelse ($course->syllabi as $syllabus)
-            <li class="list-group-item">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>
-                        <strong>{{ $syllabus->original_filename ?? basename($syllabus->file_path) }}</strong>
-                        — {{ $syllabus->curriculum_year ?? 'N/A' }} — Status: {{ $syllabus->statusLabel() }}
-                    </span>
-                    <div>
-                        @if ($syllabus->file_type === 'pdf')
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-secondary js-syllabus-preview-toggle"
-                                    data-target="syllabus-preview-{{ $syllabus->id }}"
-                                    data-src="{{ route('syllabi.preview', $syllabus) }}">
-                                <i class="bi bi-eye"></i> <span class="js-syllabus-preview-label">Preview</span>
-                            </button>
-                            <a href="{{ route('syllabi.preview', $syllabus) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-arrows-fullscreen"></i> Open Full Screen
-                            </a>
-                        @endif
-                        <a href="{{ route('syllabi.download', $syllabus) }}" class="btn btn-sm btn-outline-primary">Download</a>
-                    </div>
+    <h2 class="section-heading">Syllabi</h2>
+
+    @forelse ($course->syllabi as $syllabus)
+        <div class="syllabus-list-item">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <div class="syllabus-title">{{ $syllabus->original_filename ?? basename($syllabus->file_path) }}</div>
+                    <div class="syllabus-meta">{{ $syllabus->curriculum_year ?? 'N/A' }} &middot; {{ $syllabus->statusLabel() }}</div>
                 </div>
+                <div class="d-flex gap-2">
+                    @if ($syllabus->file_type === 'pdf')
+                        <button type="button"
+                                class="btn btn-sm btn-pup-outline-dark js-syllabus-preview-toggle"
+                                data-target="syllabus-preview-{{ $syllabus->id }}"
+                                data-src="{{ route('syllabi.preview', $syllabus) }}">
+                            <i class="bi bi-eye"></i> <span class="js-syllabus-preview-label">Preview</span>
+                        </button>
+                        <a href="{{ route('syllabi.preview', $syllabus) }}" target="_blank" rel="noopener" class="btn btn-sm btn-pup-outline-dark">
+                            <i class="bi bi-arrows-fullscreen"></i> Open Full Screen
+                        </a>
+                    @endif
+                    <a href="{{ route('syllabi.download', $syllabus) }}" class="btn btn-sm btn-pup-primary">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+            </div>
 
-                {{-- No `src` until the Preview button above is clicked (see
-                     resources/js/app.js) — the file isn't fetched at all on
-                     page load, only on request. --}}
-                @if ($syllabus->file_type === 'pdf')
-                    <iframe id="syllabus-preview-{{ $syllabus->id }}" class="w-100 mt-2 border d-none" height="500" title="Preview: {{ $syllabus->curriculum_year }}"></iframe>
-                @endif
-            </li>
-        @empty
-            <li class="list-group-item text-muted">No syllabus has been uploaded yet.</li>
-        @endforelse
-    </ul>
+            @if ($syllabus->file_type === 'pdf')
+                <iframe id="syllabus-preview-{{ $syllabus->id }}" class="w-100 mt-3 border rounded d-none" height="500" title="Preview: {{ $syllabus->curriculum_year }}"></iframe>
+            @endif
+        </div>
+    @empty
+        <div class="empty-state content-card mb-3">
+            <i class="bi bi-file-earmark-x"></i>
+            <p>No syllabus has been uploaded yet.</p>
+        </div>
+    @endforelse
 
-    <a href="{{ route('syllabi.create', $course) }}" class="btn btn-primary">Upload/Replace Syllabus</a>
-    <span class="text-muted ms-2">(requires login: admin, faculty, or intern)</span>
+    <a href="{{ route('syllabi.create', $course) }}" class="btn btn-pup-primary"><i class="bi bi-upload"></i> Upload/Replace Syllabus</a>
+    @guest
+        <span class="text-muted ms-2 small">(requires login: admin, faculty, or intern)</span>
+    @endguest
 @endsection

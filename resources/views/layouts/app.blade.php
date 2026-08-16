@@ -16,23 +16,26 @@
     @auth
         <meta name="auth-user-id" content="{{ auth()->id() }}">
     @endauth
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <title>@yield('title', 'SyllabiHub')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div class="d-flex" style="min-height: 100vh;">
-        <nav class="d-flex flex-column flex-shrink-0 p-3 bg-light border-end" style="width: 240px;">
-            <a href="{{ url('/') }}" class="d-flex align-items-center mb-3 text-decoration-none">
-                <span class="fs-5 fw-bold">SyllabiHub</span>
+        <nav class="d-flex flex-column flex-shrink-0 p-3 app-sidebar" style="width: 240px;">
+            <a href="{{ url('/') }}" class="d-flex align-items-center mb-3 text-decoration-none app-brand">
+                <span class="fs-5">SyllabiHub</span>
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a href="{{ route('courses.index') }}" class="nav-link {{ request()->routeIs('courses.index') ? 'active' : 'link-dark' }}">Browse Courses</a>
+                    <a href="{{ route('courses.index') }}" class="nav-link {{ request()->routeIs('courses.index') ? 'active' : '' }}">Browse Courses</a>
                 </li>
                 @auth
                     <li class="nav-item">
-                        <a href="{{ route('dashboard.redirect') }}" class="nav-link {{ request()->routeIs('dashboard.*') ? 'active' : 'link-dark' }}">Dashboard</a>
+                        <a href="{{ route('dashboard.redirect') }}" class="nav-link {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">Dashboard</a>
                     </li>
                 @endauth
             </ul>
@@ -44,25 +47,37 @@
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Log out</button>
+                    <button type="submit" class="btn btn-sm btn-pup-outline w-100">Log out</button>
                 </form>
             @else
-                <a class="btn btn-sm btn-outline-primary w-100" href="{{ route('login') }}">Log in</a>
+                <a class="btn btn-sm btn-pup-outline w-100" href="{{ route('login') }}">Log in</a>
             @endauth
         </nav>
 
         <main class="flex-grow-1 p-4">
-            @if (session('status'))
-                <div class="alert alert-success">{{ session('status') }}</div>
-            @endif
+            @if (session('status') || $errors->any())
+                <div class="toast-stack">
+                    @if (session('status'))
+                        <div class="toast-item toast-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <div class="toast-body">{{ session('status') }}</div>
+                            <button type="button" class="toast-close" aria-label="Dismiss">&times;</button>
+                        </div>
+                    @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    @if ($errors->any())
+                        <div class="toast-item toast-error">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <div class="toast-body">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <button type="button" class="toast-close" aria-label="Dismiss">&times;</button>
+                        </div>
+                    @endif
                 </div>
             @endif
 

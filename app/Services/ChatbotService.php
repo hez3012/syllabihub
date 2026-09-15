@@ -228,6 +228,7 @@ PROMPT;
         $model = config('services.groq.model');
 
         $response = Http::timeout(20)
+            ->withoutVerifying()
             ->withToken($apiKey)
             ->post('https://api.groq.com/openai/v1/chat/completions', [
                 'model' => $model,
@@ -461,6 +462,7 @@ PROMPT;
 
         try {
             $response = Http::timeout(20)
+                ->withoutVerifying()
                 ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
                     'system_instruction' => ['parts' => [['text' => self::SYSTEM_PROMPT]]],
                     'contents' => $contents,

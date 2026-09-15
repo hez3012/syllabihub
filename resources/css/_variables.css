@@ -1,0 +1,83 @@
+/* ============================================================
+   SyllabiHub Design Tokens (v2.0)
+   ============================================================ */
+
+:root {
+    /* --- Colors: Brand --- */
+    --sh-red:          #7B1020;
+    --sh-red-light:    #9A1528;
+    --sh-red-dark:     #5C0B17;
+    --sh-gold:         #C9992A;
+    --sh-gold-light:   #E8B84B;
+    --sh-red-pale:     #F9E8EA;
+    --sh-red-muted:    #F0D4D7;
+
+    /* --- Colors: Program Accent --- */
+    --sh-bsit:         #7B1020;
+    --sh-dit:          #1E3A5F;
+
+    /* --- Colors: Surface --- */
+    --sh-surface:      #F8F7F5;
+    --sh-panel:        #FFFFFF;
+    --sh-border:       #E2E0DC;
+    --sh-border-dark:  #C8C5BF;
+
+    /* --- Colors: Text --- */
+    --sh-text-primary: #1A1A1A;
+    --sh-text-secondary: #6B7280;
+    --sh-text-muted:   #9CA3AF;
+    --sh-text-inverse: #FFFFFF;
+
+    /* --- Colors: Status --- */
+    --sh-success:      #16A34A;
+    --sh-success-bg:   #DCFCE7;
+    --sh-warning:      #D97706;
+    --sh-warning-bg:   #FEF3C7;
+    --sh-danger:       #DC2626;
+    --sh-danger-bg:    #FEE2E2;
+    --sh-info:         #1E40AF;
+    --sh-info-bg:      #DBEAFE;
+
+    /* --- Layout --- */
+    --sh-sidebar-width: 240px;
+    --sh-sidebar-collapsed: 64px;
+    --sh-topbar-height: 56px;
+    --sh-bottombar-height: 64px;
+    --sh-page-max-width: none;
+
+    /* --- Typography --- */
+    --sh-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    --text-xs:   0.75rem;
+    --text-sm:   0.875rem;
+    --text-base: 1rem;
+    --text-lg:   1.125rem;
+    --text-xl:   1.25rem;
+    --text-2xl:  1.5rem;
+    --text-3xl:  1.875rem;
+
+    /* --- Spacing (base 4px) --- */
+    --space-1:  4px;
+    --space-2:  8px;
+    --space-3:  12px;
+    --space-4:  16px;
+    --space-5:  20px;
+    --space-6:  24px;
+    --space-8:  32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* --- Border Radius --- */
+    --radius-sm:  4px;
+    --radius-md:  8px;
+    --radius-lg:  12px;
+    --radius-xl:  16px;
+    --radius-full: 9999px;
+
+    /* --- Shadows --- */
+    --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+    --shadow-panel: 2px 0 8px rgba(0,0,0,0.06);
+}

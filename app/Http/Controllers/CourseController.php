@@ -81,6 +81,22 @@ class CourseController extends Controller
         return view('courses.show', compact('course'));
     }
 
+    /**
+     * Returns the subject detail as a partial HTML fragment
+     * for the slide-in panel (fetched via JS, no full page load).
+     */
+    public function panel(Course $course)
+    {
+        $course->load([
+            'program',
+            'creator',
+            'latestSyllabus',
+            'syllabi' => fn ($q) => $q->latest(),
+        ]);
+
+        return view('courses._panel', compact('course'));
+    }
+
     public function create(): View
     {
         return view('courses.create', [

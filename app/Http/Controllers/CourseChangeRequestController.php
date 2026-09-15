@@ -11,15 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/**
- * Faculty-side: propose an edit/delete on a course THEY created (route
- * middleware is role:faculty; ownership is checked here per-request since
- * a faculty account could otherwise pass someone else's course id).
- * Admin/intern-side: review the queue, approve or reject.
- *
- * Hold-until-approved: nothing about the course changes until an
- * admin/intern approves the request.
- */
 class CourseChangeRequestController extends Controller
 {
     public function editForm(Request $request, Course $course): View
@@ -56,9 +47,6 @@ class CourseChangeRequestController extends Controller
             'tuition_hours' => ['nullable', 'numeric', 'min:0', 'max:999.9'],
         ]);
 
-        // Per Rico, 2026-08-12: pressing "Submit" with no actual field
-        // changes should be rejected — there's nothing for an admin to
-        // review.
         if ($this->hasNoChanges($course, $validated)) {
             return back()
                 ->withErrors(['request' => 'No changes were made. Please update at least one field before submitting your request.'])
@@ -93,15 +81,36 @@ class CourseChangeRequestController extends Controller
             ->with('status', 'Your delete request has been submitted and is awaiting admin approval.');
     }
 
-    /** Admin/intern: queue of pending requests. */
-    public function index(): View
+    /** Admin/intern: queue of change requests, filterable by status. */
+    public function index(Request $request): View
     {
-        $requests = CourseChangeRequest::with(['course', 'requester'])
-            ->where('status', 'pending')
+        $status = $request->input('status', 'pending');
+        $validStatuses = ['pending', 'approved', 'rejected'];
+
+        if (!in_array($status, $validStatuses)) {
+            $status = 'pending';
+        }
+
+        $requests = CourseChangeRequest::with(['course', 'requester', 'reviewer'])
+            ->where('status', $status)
             ->latest()
             ->get();
 
-        return view('admin.course-requests.index', compact('requests'));
+        $pendingCount = CourseChangeRequest::where('status', 'pending')->count();
+
+        return view('admin.course-requests.index', [
+            'requests' => $requests,
+            'currentStatus' => $status,
+            'pendingCount' => $pendingCount,
+        ]);
+    }
+
+    /** Returns the review panel partial for a single change request. */
+    public function panel(CourseChangeRequest $changeRequest)
+    {
+        $changeRequest->load(['course', 'requester', 'reviewer']);
+
+        return view('admin.course-requests._panel', ['changeRequest' => $changeRequest]);
     }
 
     public function approve(Request $request, CourseChangeRequest $changeRequest): RedirectResponse
@@ -157,13 +166,6 @@ class CourseChangeRequestController extends Controller
         }
     }
 
-    /**
-     * True if every field in $validated matches the course's current
-     * value — i.e., the faculty member submitted the form without
-     * actually changing anything. Loose (!=) comparison so e.g. the
-     * decimal string "2" from a form input still matches the model's
-     * "2.0" without a false "changed" positive.
-     */
     private function hasNoChanges(Course $course, array $validated): bool
     {
         foreach ($validated as $field => $newValue) {

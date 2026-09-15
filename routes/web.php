@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:admin,faculty,intern'])->group(function () {
     Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
 
     Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+    Route::get('/courses/{course}/panel', [CourseController::class, 'panel'])->name('courses.panel');
 
     Route::get('/syllabi/{syllabus}/download', [SyllabusController::class, 'download'])->name('syllabi.download');
     Route::get('/syllabi/{syllabus}/preview', [SyllabusController::class, 'preview'])->name('syllabi.preview');
@@ -128,6 +129,7 @@ Route::middleware(['auth', 'role:admin,intern'])->group(function () {
 
     // Faculty edit/delete request queue.
     Route::get('/admin/course-requests', [CourseChangeRequestController::class, 'index'])->name('course-requests.index');
+    Route::get('/admin/course-requests/{changeRequest}/panel', [CourseChangeRequestController::class, 'panel'])->name('course-requests.panel');
     Route::post('/admin/course-requests/{changeRequest}/approve', [CourseChangeRequestController::class, 'approve'])->name('course-requests.approve');
     Route::post('/admin/course-requests/{changeRequest}/reject', [CourseChangeRequestController::class, 'reject'])->name('course-requests.reject');
 

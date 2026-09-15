@@ -1,0 +1,1463 @@
+/* ============================================================
+   SyllabiHub Page Styles (v2.0)
+   Dashboard, shared components, badges, etc.
+   ============================================================ */
+
+/* ============================================================
+   Stats Grid (Admin Dashboard)
+   ============================================================ */
+.sh-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.sh-stat-card {
+    background: var(--sh-panel);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: box-shadow 150ms ease;
+}
+
+.sh-stat-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.sh-stat-card-overall {
+    border-color: var(--sh-red);
+    border-width: 2px;
+}
+
+.sh-stat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.sh-stat-program-code {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--sh-red);
+    background: var(--sh-red-pale);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.sh-stat-fraction {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-secondary);
+}
+
+.sh-stat-card-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--sh-text-primary);
+    margin-bottom: var(--space-3);
+    line-height: 1.2;
+}
+
+.sh-stat-progress {
+    height: 6px;
+    background: var(--sh-surface);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-2);
+}
+
+.sh-stat-progress-bar {
+    height: 100%;
+    background: var(--sh-red);
+    border-radius: var(--radius-full);
+    transition: width 500ms ease;
+}
+
+.sh-stat-card-meta {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+/* ============================================================
+   Dashboard Grid (two-column layout)
+   ============================================================ */
+.sh-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+@media (max-width: 767px) {
+    .sh-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sh-dashboard-section {
+    background: var(--sh-panel);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.sh-dashboard-section-full {
+    background: var(--sh-panel);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+/* ============================================================
+   Section Headers
+   ============================================================ */
+.sh-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.sh-section-title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin: 0;
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.sh-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sh-badge-success {
+    background: var(--sh-success-bg);
+    color: var(--sh-success);
+}
+
+.sh-badge-warning {
+    background: var(--sh-warning-bg);
+    color: var(--sh-warning);
+}
+
+.sh-badge-danger {
+    background: var(--sh-danger-bg);
+    color: var(--sh-danger);
+}
+
+.sh-badge-info {
+    background: var(--sh-info-bg);
+    color: var(--sh-info);
+}
+
+.sh-badge-muted {
+    background: var(--sh-surface);
+    color: var(--sh-text-muted);
+    border: 1px solid var(--sh-border);
+}
+
+.sh-badge-outline {
+    background: transparent;
+    color: var(--sh-text-secondary);
+    border: 1px solid var(--sh-border);
+}
+
+/* ============================================================
+   Attention List (Admin Dashboard — courses without syllabus)
+   ============================================================ */
+.sh-attention-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sh-attention-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--sh-text-primary);
+    transition: background-color 150ms ease;
+}
+
+.sh-attention-item:hover {
+    background: var(--sh-red-pale);
+}
+
+.sh-attention-item-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.sh-attention-title {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sh-attention-item-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.sh-attention-semester {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+/* ============================================================
+   Request List (Dashboard)
+   ============================================================ */
+.sh-request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sh-request-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--sh-text-primary);
+    transition: background-color 150ms ease;
+}
+
+a.sh-request-item:hover {
+    background: var(--sh-red-pale);
+}
+
+.sh-request-item-static {
+    cursor: default;
+}
+
+.sh-request-item-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.sh-request-action {
+    font-size: var(--text-sm);
+    font-weight: 500;
+}
+
+.sh-request-item-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+}
+
+.sh-request-by {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+.sh-request-date {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+/* ============================================================
+   Activity List (Admin Dashboard — recent uploads)
+   ============================================================ */
+.sh-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sh-activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+}
+
+.sh-activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: var(--sh-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--sh-text-muted);
+    font-size: 0.9rem;
+}
+
+.sh-activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sh-activity-text {
+    font-size: var(--text-sm);
+    color: var(--sh-text-primary);
+}
+
+.sh-activity-action {
+    color: var(--sh-text-secondary);
+}
+
+.sh-activity-filename {
+    color: var(--sh-text-secondary);
+    font-size: var(--text-xs);
+}
+
+.sh-activity-meta {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+    margin-top: 1px;
+}
+
+/* ============================================================
+   View All Link
+   ============================================================ */
+.sh-view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sh-red);
+    text-decoration: none;
+    margin-top: var(--space-3);
+}
+
+.sh-view-all-link:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   Empty State (inline variant)
+   ============================================================ */
+.sh-empty-state-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    color: var(--sh-text-muted);
+    font-size: var(--text-sm);
+    justify-content: center;
+}
+
+.sh-empty-state-inline i {
+    font-size: 1.1rem;
+}
+
+/* ============================================================
+   Filter Tabs
+   ============================================================ */
+.sh-filter-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+
+.sh-filter-tabs {
+    display: inline-flex;
+    background: var(--sh-panel);
+    border: 2px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    gap: 4px;
+}
+
+.sh-filter-tab {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-secondary);
+    background: transparent;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 150ms ease;
+    font-family: var(--sh-font-family);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.sh-filter-tab:hover {
+    color: var(--sh-red);
+    background: var(--sh-red-pale);
+    border-color: var(--sh-red-muted);
+}
+
+.sh-filter-tab.active {
+    background: var(--sh-red);
+    color: #fff;
+    border-color: var(--sh-red);
+    box-shadow: 0 2px 8px rgba(139, 21, 32, 0.25);
+}
+
+/* ============================================================
+   Pending Request Banner (Faculty Dashboard)
+   ============================================================ */
+.sh-pending-banner {
+    background: var(--sh-warning-bg);
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.sh-pending-banner-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--sh-warning);
+    font-weight: 500;
+}
+
+.sh-pending-banner-content i {
+    font-size: 1rem;
+}
+
+/* ============================================================
+   Table link style
+   ============================================================ */
+.sh-table-link {
+    color: var(--sh-text-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.sh-table-link:hover {
+    color: var(--sh-red);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   Inline Filters (Subjects page)
+   ============================================================ */
+.sh-inline-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: var(--space-4);
+}
+
+.sh-inline-filters .form-select {
+    width: auto;
+    min-width: 130px;
+}
+
+@media (max-width: 767px) {
+    .sh-inline-filters {
+        margin-left: 0;
+        margin-top: var(--space-2);
+        width: 100%;
+    }
+
+    .sh-inline-filters .form-select {
+        flex: 1;
+    }
+
+    .sh-filter-bar {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* ============================================================
+   Clickable Table Rows
+   ============================================================ */
+.sh-clickable-row {
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.sh-clickable-row:hover {
+    background: var(--sh-red-pale);
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+.sh-pagination {
+    margin-top: var(--space-4);
+    display: flex;
+    justify-content: center;
+}
+
+.sh-pagination .pagination {
+    margin-bottom: 0;
+}
+
+.sh-pagination .page-link {
+    color: var(--sh-text-secondary);
+    border-color: var(--sh-border);
+    font-size: var(--text-sm);
+}
+
+.sh-pagination .page-item.active .page-link {
+    background: var(--sh-red);
+    border-color: var(--sh-red);
+}
+
+/* ============================================================
+   Subject Detail Panel
+   ============================================================ */
+.sh-subject-panel {
+    width: 520px;
+}
+
+.sh-panel-breadcrumb {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sh-text-secondary);
+}
+
+.sh-panel-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-10) 0;
+}
+
+/* Panel detail header */
+.sh-panel-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.sh-panel-detail-title h2 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--sh-red);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.sh-panel-detail-title p {
+    font-size: var(--text-lg);
+    color: var(--sh-text-primary);
+    margin: var(--space-1) 0 0;
+    font-weight: 500;
+}
+
+/* Panel metadata grid */
+.sh-panel-detail-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--sh-border);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-5);
+}
+
+.sh-meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-3) var(--space-4);
+    background: var(--sh-panel);
+}
+
+.sh-meta-label {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--sh-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.sh-meta-value {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sh-text-primary);
+}
+
+/* Panel sections */
+.sh-panel-detail-section {
+    margin-bottom: var(--space-5);
+}
+
+.sh-panel-detail-section h3 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--sh-border);
+}
+
+/* Panel syllabus items */
+.sh-panel-syllabus-item {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-2);
+}
+
+.sh-panel-syllabus-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.sh-panel-syllabus-filename {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sh-text-primary);
+}
+
+.sh-panel-syllabus-year {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+    margin-left: auto;
+}
+
+.sh-panel-syllabus-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.sh-panel-preview-frame {
+    width: 100%;
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-md);
+    margin-top: var(--space-2);
+}
+
+/* Panel empty syllabus */
+.sh-panel-empty-syllabus {
+    text-align: center;
+    padding: var(--space-6);
+    color: var(--sh-text-muted);
+}
+
+.sh-panel-empty-syllabus i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.sh-panel-empty-syllabus p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* Panel actions */
+.sh-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+@media (max-width: 767px) {
+    .sh-subject-panel {
+        width: 100%;
+    }
+
+    .sh-panel-detail-meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   Upload Syllabus Page
+   ============================================================ */
+.sh-upload-form-header {
+    margin-bottom: var(--space-5);
+}
+
+.sh-upload-course-label {
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
+    margin: var(--space-1) 0 0;
+}
+
+.sh-upload-card {
+    background: var(--sh-panel);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+}
+
+.sh-upload-field {
+    margin-bottom: var(--space-5);
+}
+
+.sh-upload-field .form-label {
+    font-weight: 600;
+}
+
+/* Drop zone */
+.sh-upload-zone {
+    border: 2px dashed var(--sh-border-dark);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-6);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 150ms ease, background-color 150ms ease;
+    margin-bottom: var(--space-3);
+    position: relative;
+}
+
+.sh-upload-zone:hover {
+    border-color: var(--sh-red);
+    background: var(--sh-red-pale);
+}
+
+.sh-upload-zone-dragover {
+    border-color: var(--sh-red);
+    background: var(--sh-red-pale);
+}
+
+.sh-upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.sh-upload-zone-content {
+    pointer-events: none;
+}
+
+.sh-upload-zone-content i {
+    font-size: 2.5rem;
+    color: var(--sh-text-muted);
+    display: block;
+    margin-bottom: var(--space-3);
+}
+
+.sh-upload-zone-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.sh-upload-zone-hint {
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
+}
+
+.sh-upload-browse {
+    color: var(--sh-red);
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.sh-upload-zone-limit {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+    margin-top: var(--space-1);
+}
+
+/* File selected state */
+.sh-upload-zone-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
+}
+
+.sh-upload-file-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: left;
+}
+
+.sh-upload-file-info i {
+    font-size: 1.5rem;
+    color: var(--sh-red);
+}
+
+.sh-upload-file-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    word-break: break-all;
+}
+
+.sh-upload-file-size {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+.sh-upload-remove {
+    background: none;
+    border: none;
+    color: var(--sh-text-muted);
+    font-size: 1rem;
+    padding: var(--space-2);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: background-color 150ms ease, color 150ms ease;
+}
+
+.sh-upload-remove:hover {
+    background: var(--sh-danger-bg);
+    color: var(--sh-danger);
+}
+
+/* Error message */
+.sh-upload-error {
+    font-size: var(--text-xs);
+    color: var(--sh-danger);
+    margin-top: calc(-1 * var(--space-2));
+    margin-bottom: var(--space-3);
+}
+
+/* Note */
+.sh-upload-note {
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
+    margin: var(--space-4) 0;
+}
+
+/* Actions */
+.sh-upload-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--sh-border);
+}
+
+/* ============================================================
+   Change Request Review Panel
+   ============================================================ */
+.sh-review-panel {
+    width: 620px;
+}
+
+@media (max-width: 767px) {
+    .sh-review-panel {
+        width: 100%;
+    }
+}
+
+/* Review panel header */
+.sh-review-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.sh-review-title h2 {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--sh-text-primary);
+    margin: var(--space-1) 0 0;
+    line-height: 1.2;
+}
+
+/* Review meta */
+.sh-review-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--sh-border);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-5);
+}
+
+/* Review sections */
+.sh-review-section {
+    margin-bottom: var(--space-5);
+}
+
+.sh-review-section h3 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--sh-border);
+}
+
+/* Diff table */
+.sh-diff-table {
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.sh-diff-header {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr;
+    background: var(--sh-surface);
+    border-bottom: 1px solid var(--sh-border);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--sh-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.sh-diff-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--sh-border);
+    font-size: var(--text-sm);
+}
+
+.sh-diff-row:last-child {
+    border-bottom: none;
+}
+
+.sh-diff-row.sh-diff-changed {
+    background: var(--sh-red-pale);
+}
+
+.sh-diff-changed .sh-diff-col-proposed {
+    font-weight: 600;
+    color: var(--sh-red);
+}
+
+.sh-diff-col-field {
+    font-weight: 500;
+    color: var(--sh-text-secondary);
+    font-size: var(--text-xs);
+}
+
+.sh-diff-col-current {
+    color: var(--sh-text-muted);
+}
+
+.sh-diff-col-proposed {
+    color: var(--sh-text-primary);
+}
+
+/* Delete warning */
+.sh-review-delete-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--sh-danger-bg);
+    border: 1px solid #fca5a5;
+    border-radius: var(--radius-lg);
+    color: var(--sh-danger);
+}
+
+.sh-review-delete-warning i {
+    font-size: 1.2rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.sh-review-delete-warning strong {
+    display: block;
+    margin-bottom: var(--space-1);
+}
+
+.sh-review-delete-warning p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* Review note */
+.sh-review-note {
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    margin: 0;
+}
+
+/* Review actions */
+.sh-review-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--sh-border);
+}
+
+.sh-review-approve-form {
+    flex-shrink: 0;
+}
+
+.sh-review-reject-group {
+    flex: 1;
+}
+
+.sh-review-reject-form {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
+}
+
+.sh-review-reject-form .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ============================================================
+   Responsive: Mobile polish
+   ============================================================ */
+@media (max-width: 767px) {
+    .sh-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+    }
+
+    .sh-stat-card {
+        padding: var(--space-4);
+    }
+
+    .sh-stat-card-title {
+        font-size: var(--text-base);
+    }
+
+    .sh-diff-header,
+    .sh-diff-row {
+        grid-template-columns: 100px 1fr 1fr;
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .sh-review-actions {
+        flex-direction: column;
+    }
+
+    .sh-review-reject-form {
+        flex-direction: column;
+    }
+
+    .sh-upload-card {
+        padding: var(--space-4);
+    }
+
+    .sh-upload-zone {
+        padding: var(--space-5) var(--space-4);
+    }
+
+    .sh-panel-detail-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .sh-review-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .courses-table th:nth-child(3),
+    .courses-table td:nth-child(3) {
+        display: none;
+    }
+}
+
+/* ============================================================
+   Colorful Table (Subjects)
+   ============================================================ */
+.sh-table-colorful .courses-table thead {
+    background: var(--sh-red-dark);
+}
+
+.sh-table-colorful .courses-table thead th {
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none !important;
+    padding: var(--space-3) var(--space-4);
+    background: var(--sh-red-dark);
+}
+
+.sh-table-colorful .courses-table tbody tr {
+    border-left: 3px solid transparent;
+    transition: background-color 120ms ease, border-left-color 120ms ease;
+}
+
+.sh-table-colorful .courses-table tbody tr:hover {
+    background: var(--sh-red-pale);
+    border-left-color: var(--sh-red);
+}
+
+/* Clickable row indication */
+.sh-clickable-row {
+    cursor: pointer;
+}
+
+.sh-row-view-hint {
+    color: var(--sh-text-muted);
+    font-size: var(--text-sm);
+    transition: color 120ms ease, transform 120ms ease;
+    display: inline-block;
+}
+
+.sh-clickable-row:hover .sh-row-view-hint {
+    color: var(--sh-red);
+    transform: translateX(2px);
+}
+
+/* ============================================================
+   Filter Dropdowns (styled)
+   ============================================================ */
+.sh-filter-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.sh-filter-dropdown i {
+    position: absolute;
+    left: 12px;
+    color: var(--sh-text-muted);
+    font-size: var(--text-sm);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.sh-filter-dropdown .form-select {
+    padding-left: 32px;
+    padding-right: 32px;
+    border: 2px solid var(--sh-border);
+    border-radius: var(--radius-md);
+    background: var(--sh-panel);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    appearance: auto;
+    height: 38px;
+    font-family: var(--sh-font-family);
+}
+
+.sh-filter-dropdown .form-select:hover {
+    border-color: var(--sh-red-muted);
+}
+
+.sh-filter-dropdown .form-select:focus {
+    border-color: var(--sh-red);
+    box-shadow: 0 0 0 3px rgba(139, 21, 32, 0.12);
+    outline: none;
+}
+
+/* ============================================================
+   Button-like Elements (global)
+   ============================================================ */
+.btn {
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    padding: var(--space-2) var(--space-4);
+    transition: all 150ms ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--sh-font-family);
+    text-decoration: none;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-pup-primary {
+    background: var(--sh-red);
+    color: #fff;
+    border-color: var(--sh-red);
+}
+
+.btn-pup-primary:hover {
+    background: var(--sh-red-light);
+    border-color: var(--sh-red-light);
+}
+
+.btn-pup-outline-dark {
+    background: var(--sh-panel);
+    color: var(--sh-text-primary);
+    border-color: var(--sh-border-dark);
+}
+
+.btn-pup-outline-dark:hover {
+    background: var(--sh-red-pale);
+    border-color: var(--sh-red);
+    color: var(--sh-red);
+}
+
+.btn-pup-warning {
+    background: var(--sh-warning-bg);
+    color: var(--sh-warning);
+    border-color: #fde68a;
+}
+
+.btn-pup-warning:hover {
+    background: #fde68a;
+}
+
+.btn-pup-danger {
+    background: var(--sh-danger-bg);
+    color: var(--sh-danger);
+    border-color: #fca5a5;
+}
+
+.btn-pup-danger:hover {
+    background: #fca5a5;
+    color: #fff;
+}
+
+.btn-pup-success {
+    background: var(--sh-success-bg);
+    color: var(--sh-success);
+    border-color: #86efac;
+}
+
+.btn-pup-success:hover {
+    background: #86efac;
+    color: #fff;
+}
+
+/* ============================================================
+   Course Code Tags (COMP = maroon, DIT = navy)
+   ============================================================ */
+.course-code-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--sh-red-pale);
+    color: var(--sh-bsit);
+    border: 1px solid var(--sh-red-muted);
+    white-space: nowrap;
+}
+
+.course-code-tag-dit {
+    background: #DBEAFE;
+    color: var(--sh-dit);
+    border-color: #BFDBFE;
+}
+
+/* ============================================================
+   Program Pills
+   ============================================================ */
+.program-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.program-pill-bsit {
+    background: var(--sh-info-bg);
+    color: var(--sh-info);
+}
+
+.program-pill-dit {
+    background: var(--sh-success-bg);
+    color: var(--sh-success);
+}
+
+/* ============================================================
+   Back Link
+   ============================================================ */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--sh-text-secondary);
+    text-decoration: none;
+    margin-bottom: var(--space-4);
+    transition: color 150ms ease;
+}
+
+.back-link:hover {
+    color: var(--sh-red);
+}
+
+/* ============================================================
+   Empty State
+   ============================================================ */
+.empty-state {
+    text-align: center;
+    padding: var(--space-10) var(--space-6);
+    color: var(--sh-text-muted);
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: var(--space-3);
+    color: var(--sh-text-muted);
+}
+
+.empty-state h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin: 0 0 var(--space-2);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
+}
+
+/* ============================================================
+   Status Dots (Syllabus present/missing)
+   ============================================================ */
+.sh-status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    margin-right: 2px;
+}
+
+.sh-status-dot-green {
+    background: var(--sh-success);
+}
+
+.sh-status-dot-amber {
+    background: var(--sh-warning);
+}
+
+/* ============================================================
+   Attention List — amber left-border stripe
+   ============================================================ */
+.sh-attention-item {
+    border-left: 3px solid var(--sh-warning);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.sh-attention-item:hover {
+    background: var(--sh-warning-bg);
+    border-left-color: var(--sh-warning);
+}
+
+/* ============================================================
+   Page Fade-in Transition
+   ============================================================ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.sh-page-body {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* ============================================================
+   Sage FAB Pulse
+   ============================================================ */
+@keyframes sagePulse {
+    0% { box-shadow: 0 0 0 0 rgba(123, 16, 32, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(123, 16, 32, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(123, 16, 32, 0); }
+}
+
+.sh-sage-fab {
+    animation: sagePulse 2s infinite;
+}
+
+.sh-sage-fab:hover {
+    animation: none;
+}
+
+/* ============================================================
+   Branded Empty States
+   ============================================================ */
+.sh-empty-state-branded {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+}
+
+.sh-empty-state-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-xl);
+    background: var(--sh-red-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-3);
+}
+
+.sh-empty-state-icon i {
+    font-size: 1.5rem;
+    color: var(--sh-red);
+}
+
+.sh-empty-state-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    margin: 0 0 var(--space-1);
+}
+
+.sh-empty-state-desc {
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+    margin: 0;
+}

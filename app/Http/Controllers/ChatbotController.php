@@ -46,7 +46,7 @@ class ChatbotController extends Controller
             $this->chatbot->reply(
                 $validated['message'],
                 $validated['history'] ?? [],
-                $request->user()->role,
+                $request->user()?->role ?? 'guest',
                 $validated['language'] ?? 'english'
             )
         );

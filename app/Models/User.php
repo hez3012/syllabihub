@@ -22,7 +22,6 @@ class User extends Authenticatable
         ];
     }
 
-    /** Courses this user created (admin/intern act freely; faculty own only what they made). */
     public function createdCourses()
     {
         return $this->hasMany(Course::class, 'created_by');
@@ -33,23 +32,8 @@ class User extends Authenticatable
         return $this->hasMany(Syllabus::class, 'uploaded_by');
     }
 
-    public function courseChangeRequests()
-    {
-        return $this->hasMany(CourseChangeRequest::class, 'requested_by');
-    }
-
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
-    }
-
-    public function isFaculty(): bool
-    {
-        return $this->role === 'faculty';
-    }
-
-    public function isIntern(): bool
-    {
-        return $this->role === 'intern';
     }
 }

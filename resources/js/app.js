@@ -35,7 +35,7 @@ document.addEventListener('click', function (event) {
 // (none currently) in case a future form needs to opt out.
 document.addEventListener('submit', function (event) {
     const form = event.target;
-    if (!(form instanceof HTMLFormElement) || form.dataset.noLoading) {
+    if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-loading')) {
         return;
     }
 

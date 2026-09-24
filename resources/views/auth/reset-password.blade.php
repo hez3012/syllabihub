@@ -11,11 +11,17 @@
         <input type="hidden" name="token" value="{{ $token }}">
         <div class="mb-3">
             <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email', $email) }}" required autofocus>
+            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $email) }}" required autofocus>
+            @error('email')
+                <div class="sh-field-error">{{ $message }}</div>
+            @enderror
         </div>
         <div class="mb-3">
             <label class="form-label">New password</label>
-            <input type="password" name="password" class="form-control" required minlength="8">
+            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required minlength="8">
+            @error('password')
+                <div class="sh-field-error">{{ $message }}</div>
+            @enderror
         </div>
         <div class="mb-3">
             <label class="form-label">Confirm new password</label>

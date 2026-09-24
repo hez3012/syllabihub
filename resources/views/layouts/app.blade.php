@@ -47,23 +47,18 @@
                 </a>
 
                 @auth
-                <a href="{{ route('dashboard.redirect') }}" class="sh-nav-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
-                    <i class="bi bi-grid-1x2"></i>
-                    <span>Dashboard</span>
-                </a>
-
-                @if (auth()->user()->role === 'admin' || auth()->user()->role === 'intern')
+                @if (auth()->user()->role === 'admin')
                     <div class="sh-nav-divider"></div>
                     <div class="sh-nav-section-label">Admin</div>
 
-                    <a href="{{ route('course-requests.index') }}" class="sh-nav-item {{ request()->routeIs('course-requests.*') ? 'active' : '' }}">
-                        <i class="bi bi-arrow-left-right"></i>
-                        <span>Change Requests</span>
+                    <a href="{{ route('dashboard.admin') }}" class="sh-nav-item {{ request()->routeIs('dashboard.admin') ? 'active' : '' }}">
+                        <i class="bi bi-grid-1x2"></i>
+                        <span>Dashboard</span>
                     </a>
 
-                    <a href="{{ route('faculty-accounts.index') }}" class="sh-nav-item {{ request()->routeIs('faculty-accounts.*') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i>
-                        <span>Faculty Accounts</span>
+                    <a href="{{ route('audit.index') }}" class="sh-nav-item {{ request()->routeIs('audit.*') ? 'active' : '' }}">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Audit</span>
                     </a>
                 @endif
                 @endauth
@@ -90,9 +85,9 @@
             </div>
             @else
             <div class="sh-sidebar-user">
-                <a href="{{ route('login') }}" class="sh-sidebar-logout" style="text-decoration:none;">
-                    <i class="bi bi-box-arrow-in-right"></i>
-                    <span>Log in</span>
+                <a href="{{ url('/') }}" class="sh-sidebar-logout" style="text-decoration:none;">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Exit</span>
                 </a>
             </div>
             @endauth
@@ -126,13 +121,7 @@
                         @if ($errors->any())
                             <div class="toast-item toast-error">
                                 <i class="bi bi-exclamation-circle-fill"></i>
-                                <div class="toast-body">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                                <div class="toast-body">{{ $errors->first() }}</div>
                                 <button type="button" class="toast-close" aria-label="Dismiss">&times;</button>
                             </div>
                         @endif
@@ -145,7 +134,6 @@
     </div>
 
     {{-- Sage chatbot --}}
-    @auth
         <button type="button" id="sh-sage-fab" class="sh-sage-fab" aria-label="Open Sage">
             <i class="bi bi-chat-dots-fill"></i>
         </button>
@@ -190,28 +178,36 @@
                 </button>
             </form>
         </div>
-    @endauth
 
     {{-- Mobile bottom tab bar --}}
     <div class="sh-bottombar">
         <div class="sh-bottombar-inner">
-            <a href="{{ route('dashboard.redirect') }}" class="sh-bottombar-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
-                <i class="bi bi-house-door"></i>
-                <span>Home</span>
-            </a>
             <a href="{{ route('courses.index') }}" class="sh-bottombar-item {{ request()->routeIs('courses.*') ? 'active' : '' }}">
                 <i class="bi bi-book"></i>
                 <span>Subjects</span>
             </a>
             @auth
+            <a href="{{ route('dashboard.admin') }}" class="sh-bottombar-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
             <button type="button" class="sh-bottombar-item sh-sage-mobile-btn" aria-label="Open Sage">
                 <i class="bi bi-chat-dots-fill"></i>
                 <span>Sage</span>
             </button>
-            <a href="{{ route('dashboard.redirect') }}" class="sh-bottombar-item">
-                <i class="bi bi-person"></i>
-                <span>Me</span>
+            <a href="{{ route('audit.index') }}" class="sh-bottombar-item {{ request()->routeIs('audit.*') ? 'active' : '' }}">
+                <i class="bi bi-clock-history"></i>
+                <span>Audit</span>
             </a>
+            @else
+            <a href="{{ url('/') }}" class="sh-bottombar-item">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
+            <button type="button" class="sh-bottombar-item sh-sage-mobile-btn" aria-label="Open Sage">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Sage</span>
+            </button>
             @endauth
         </div>
     </div>

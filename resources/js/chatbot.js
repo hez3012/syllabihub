@@ -31,6 +31,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentLanguage = loadLanguage();
     languageSelect.value = currentLanguage;
 
+    const sendBtn = form.querySelector('.sh-sage-send-btn');
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        input.addEventListener('input', function () {
+            sendBtn.disabled = !input.value.trim();
+        });
+    }
+
     languageSelect.addEventListener('change', function () {
         currentLanguage = languageSelect.value;
         saveLanguage(currentLanguage);
@@ -300,15 +308,20 @@ document.addEventListener('DOMContentLoaded', function () {
         row.className = 'sh-sage-msg sh-sage-msg-assistant sh-sage-msg-in';
         row.id = 'chatbot-typing';
 
-        const bubble = document.createElement('div');
-        bubble.className = 'sh-sage-bubble';
-        for (let i = 0; i < 3; i++) {
-            const dot = document.createElement('span');
-            dot.className = 'sh-sage-typing-dot';
-            bubble.appendChild(dot);
-        }
+        const contentRow = document.createElement('div');
+        contentRow.className = 'sh-sage-msg-row';
 
-        row.appendChild(bubble);
+        const avatar = document.createElement('div');
+        avatar.className = 'sh-sage-msg-avatar';
+        avatar.innerHTML = '<i class="bi bi-mortarboard-fill"></i>';
+        contentRow.appendChild(avatar);
+
+        const bubble = document.createElement('div');
+        bubble.className = 'sh-sage-bubble sh-sage-spinner-bubble';
+        bubble.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-label="Sage is typing…"></span>';
+        contentRow.appendChild(bubble);
+
+        row.appendChild(contentRow);
         messages.appendChild(row);
         scrollToBottom();
     }
@@ -399,10 +412,9 @@ document.addEventListener('DOMContentLoaded', function () {
             removeTypingIndicator();
             addMessageBubble('assistant', 'I could not reach the server. Please check your internet connection and try again.');
         } finally {
-            const sendBtn = form.querySelector('.sh-sage-send-btn');
             if (sendBtn) {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="bi bi-send"></i>';
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="bi bi-send-fill"></i>';
             }
             input.disabled = false;
             input.focus();

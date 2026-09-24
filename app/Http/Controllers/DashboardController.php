@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditTrail;
 use App\Models\Course;
-use App\Models\CourseChangeRequest;
 use App\Models\Program;
 use App\Models\Syllabus;
 use Illuminate\Http\Request;
@@ -11,24 +11,6 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function faculty(Request $request): View
-    {
-        $user = $request->user();
-
-        $courses = $user->createdCourses()
-            ->with(['program', 'latestSyllabus'])
-            ->orderBy('course_code')
-            ->get();
-
-        $pendingRequests = $user->courseChangeRequests()
-            ->with('course')
-            ->where('status', 'pending')
-            ->latest()
-            ->get();
-
-        return view('dashboard.faculty', compact('courses', 'pendingRequests'));
-    }
-
     public function admin(): View
     {
         $programs = Program::withCount([
@@ -48,16 +30,12 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        $pendingRequests = CourseChangeRequest::with(['course', 'requester'])
-            ->where('status', 'pending')
+        $recentUploads = Syllabus::with(['course', 'uploader'])
             ->latest()
             ->limit(10)
             ->get();
 
-        $pendingRequestCount = $pendingRequests->count();
-
-        $recentUploads = Syllabus::with(['course', 'uploader'])
-            ->latest()
+        $recentActivity = AuditTrail::latest()
             ->limit(10)
             ->get();
 
@@ -67,9 +45,8 @@ class DashboardController extends Controller
             'withSyllabus',
             'missing',
             'missingCourses',
-            'pendingRequests',
-            'pendingRequestCount',
             'recentUploads',
+            'recentActivity',
         ));
     }
 }

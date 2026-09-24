@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    {{-- Two-column section: Needs Attention + Pending Requests --}}
+    {{-- Two-column: Needs Attention + Recent Activity --}}
     <div class="sh-dashboard-grid">
         {{-- Needs Attention --}}
         <div class="sh-dashboard-section">
@@ -59,7 +59,7 @@
             @else
                 <div class="sh-attention-list">
                     @foreach ($missingCourses as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="sh-attention-item">
+                        <a href="{{ route('courses.index') }}" class="sh-attention-item">
                             <div class="sh-attention-item-left">
                                 <span class="course-code-tag {{ str_starts_with($course->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $course->course_code }}</span>
                                 <span class="sh-attention-title">{{ $course->title }}</span>
@@ -77,49 +77,45 @@
             @endif
         </div>
 
-        {{-- Pending Requests --}}
+        {{-- Recent Audit Activity --}}
         <div class="sh-dashboard-section">
             <div class="sh-section-header">
-                <h2 class="sh-section-title">Pending Requests</h2>
-                @if ($pendingRequestCount > 0)
-                    <a href="{{ route('course-requests.index') }}" class="sh-badge sh-badge-warning">{{ $pendingRequestCount }} pending</a>
-                @endif
+                <h2 class="sh-section-title">Recent Activity</h2>
+                <a href="{{ route('audit.index') }}" class="sh-view-all-link">View all <i class="bi bi-arrow-right"></i></a>
             </div>
 
-            @if ($pendingRequests->isEmpty())
-                <div class="sh-empty-state-branded">
-                    <div class="sh-empty-state-icon">
-                        <i class="bi bi-inbox"></i>
-                    </div>
-                    <p class="sh-empty-state-title">No pending requests</p>
-                    <p class="sh-empty-state-desc">Faculty submissions will appear here for review.</p>
+            @if ($recentActivity->isEmpty())
+                <div class="sh-empty-state-inline">
+                    <i class="bi bi-clock-history"></i>
+                    <span>No recent activity yet.</span>
                 </div>
             @else
-                <div class="sh-request-list">
-                    @foreach ($pendingRequests as $req)
-                        <a href="{{ route('course-requests.index') }}" class="sh-request-item">
-                            <div class="sh-request-item-left">
-                                <span class="course-code-tag {{ str_starts_with($req->course?->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $req->course?->course_code }}</span>
-                                <span class="sh-request-action">{{ ucfirst($req->action) }} request</span>
+                <div class="sh-activity-list">
+                    @foreach ($recentActivity as $trail)
+                        <div class="sh-activity-item">
+                            <div class="sh-activity-icon">
+                                <i class="bi bi-{{ $trail->action === 'created' ? 'plus-circle' : ($trail->action === 'deleted' ? 'trash' : 'pencil') }}"></i>
                             </div>
-                            <div class="sh-request-item-right">
-                                <span class="sh-request-by">by {{ $req->requester?->name ?? '—' }}</span>
-                                <span class="sh-request-date">{{ $req->created_at?->diffForHumans() }}</span>
+                            <div class="sh-activity-content">
+                                <div class="sh-activity-text">
+                                    <span class="sh-activity-action">{{ $trail->action }}</span>
+                                    <span>{{ $trail->description }}</span>
+                                </div>
+                                <div class="sh-activity-meta">
+                                    by {{ $trail->full_name }} · {{ $trail->created_at?->diffForHumans() }}
+                                </div>
                             </div>
-                        </a>
+                        </div>
                     @endforeach
                 </div>
-                @if ($pendingRequestCount > 10)
-                    <a href="{{ route('course-requests.index') }}" class="sh-view-all-link">View all pending requests <i class="bi bi-arrow-right"></i></a>
-                @endif
             @endif
         </div>
     </div>
 
-    {{-- Recent Activity --}}
+    {{-- Recent Uploads --}}
     <div class="sh-dashboard-section sh-dashboard-section-full">
         <div class="sh-section-header">
-            <h2 class="sh-section-title">Recent Activity</h2>
+            <h2 class="sh-section-title">Recent Uploads</h2>
         </div>
 
         @if ($recentUploads->isEmpty())

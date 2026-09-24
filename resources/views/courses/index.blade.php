@@ -4,7 +4,7 @@
 
 @section('header-actions')
     @auth
-        @if (auth()->user()->isAdmin() || auth()->user()->isIntern())
+        @if (auth()->user()->role === 'admin')
             <a href="{{ route('courses.create') }}" class="btn btn-pup-primary btn-sm">
                 <i class="bi bi-plus-lg"></i> Add Subject
             </a>
@@ -68,7 +68,8 @@
                     <th style="width:120px;">Code</th>
                     <th>Title</th>
                     <th style="width:80px;">Units</th>
-                    <th style="width:160px;">Semester</th>
+                    <th style="width:110px;">Year Level</th>
+                    <th style="width:110px;">Semester</th>
                     <th style="width:90px;">Syllabus</th>
                     <th style="width:60px;"></th>
                 </tr>
@@ -79,7 +80,8 @@
                         <td><span class="course-code-tag {{ str_starts_with($course->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $course->course_code }}</span></td>
                         <td><span class="sh-table-link">{{ $course->title }}</span></td>
                         <td class="text-muted">{{ $course->credited_units ?? '—' }}</td>
-                        <td class="text-muted">{{ $course->yearLevelLabel() }} {{ $course->semesterLabel() }}</td>
+                        <td class="text-muted">{{ $course->yearLevelLabel() }}</td>
+                        <td class="text-muted">{{ $course->semesterLabel() }}</td>
                         <td>
                             @if ($course->latestSyllabus)
                                 <span class="sh-badge sh-badge-success"><span class="sh-status-dot sh-status-dot-green"></span> Yes</span>
@@ -93,7 +95,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-state">
                                 <i class="bi bi-book"></i>
                                 <h3>No subjects found</h3>

@@ -39,7 +39,7 @@
                     <tr data-has-syllabus="{{ $course->latestSyllabus ? 'yes' : 'no' }}">
                         <td><span class="course-code-tag {{ str_starts_with($course->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $course->course_code }}</span></td>
                         <td>
-                            <a href="{{ route('courses.show', $course) }}" class="sh-table-link">{{ $course->title }}</a>
+                            <a href="{{ route('courses.index') }}" class="sh-table-link">{{ $course->title }}</a>
                         </td>
                         <td class="text-muted">{{ $course->yearLevelLabel() }} {{ $course->semesterLabel() }}</td>
                         <td>

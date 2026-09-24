@@ -3,7 +3,7 @@
 @section('title', 'Request Edit — ' . $course->course_code)
 
 @section('content')
-    <a href="{{ route('courses.show', $course) }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to {{ $course->course_code }}</a>
+    <a href="{{ route('courses.index') }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Courses</a>
 
     <div class="sh-upload-form-header">
         <h1 class="sh-section-title">Propose an Edit — {{ $course->course_code }}</h1>
@@ -23,7 +23,7 @@
             @include('courses._form')
 
             <div class="sh-upload-actions">
-                <a href="{{ route('courses.show', $course) }}" class="btn btn-pup-outline-dark">Cancel</a>
+                <a href="{{ route('courses.index') }}" class="btn btn-pup-outline-dark">Cancel</a>
                 <button type="submit" class="btn btn-pup-primary"><i class="bi bi-send"></i> Submit for Approval</button>
             </div>
         </form>

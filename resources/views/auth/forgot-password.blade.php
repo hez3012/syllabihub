@@ -10,7 +10,10 @@
         @csrf
         <div class="mb-3">
             <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus>
+            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required autofocus>
+            @error('email')
+                <div class="sh-field-error">{{ $message }}</div>
+            @enderror
         </div>
         <button type="submit" class="btn btn-pup-primary w-100 mb-2">Send Reset Link</button>
         <a href="{{ route('login') }}" class="auth-link small">&larr; Back to login</a>

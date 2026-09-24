@@ -33,24 +33,11 @@ class Course extends Model
         return $this->hasOne(Syllabus::class)->latestOfMany();
     }
 
-    /** Who created this course. Null = seeded/legacy — no faculty owner. */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function changeRequests()
-    {
-        return $this->hasMany(CourseChangeRequest::class);
-    }
-
-    /** Whether this course has a not-yet-decided edit/delete request. */
-    public function hasPendingChangeRequest(): bool
-    {
-        return $this->changeRequests()->where('status', 'pending')->exists();
-    }
-
-    /** Human-readable "Nth Year" label for year_level (1-4) — matches the Year Level dropdown options. */
     public function yearLevelLabel(): string
     {
         return match ($this->year_level) {
@@ -62,7 +49,6 @@ class Course extends Model
         };
     }
 
-    /** Human-readable label for semester (1st/2nd/summer) — for display only, the raw value is still what's stored/queried. */
     public function semesterLabel(): string
     {
         return ucfirst($this->semester);

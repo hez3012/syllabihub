@@ -3,7 +3,7 @@
 @section('title', 'Upload Syllabus')
 
 @section('content')
-    <a href="{{ route('courses.show', $course) }}" class="back-link">
+    <a href="{{ route('courses.index') }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to {{ $course->course_code }}
     </a>
 
@@ -84,7 +84,7 @@
             <p class="sh-upload-note">At least one file is required. Uploading a new file replaces the existing file of the same type.</p>
 
             <div class="sh-upload-actions">
-                <a href="{{ route('courses.show', $course) }}" class="btn btn-pup-outline-dark">Cancel</a>
+                <a href="{{ route('courses.index') }}" class="btn btn-pup-outline-dark">Cancel</a>
                 <button type="submit" class="btn btn-pup-primary" id="sh-upload-submit" disabled>
                     <i class="bi bi-upload"></i> Upload Syllabus
                 </button>

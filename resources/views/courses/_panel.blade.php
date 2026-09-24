@@ -4,11 +4,6 @@
         <h2>{{ $course->course_code }}</h2>
         <p>{{ $course->title }}</p>
     </div>
-    @if ($course->latestSyllabus)
-        <a href="{{ route('syllabi.download', $course->latestSyllabus) }}" class="btn btn-pup-primary btn-sm">
-            <i class="bi bi-download"></i> Download
-        </a>
-    @endif
 </div>
 
 <div class="sh-panel-detail-meta">
@@ -77,14 +72,14 @@
                 @endif
             </div>
             <div class="sh-panel-syllabus-actions">
+                <a href="{{ route('syllabi.download', $syllabus) }}" class="btn btn-sm btn-pup-primary">
+                    <i class="bi bi-download"></i> Download
+                </a>
                 @if ($syllabus->file_type === 'pdf')
                     <a href="{{ route('syllabi.preview', $syllabus) }}" target="_blank" rel="noopener" class="btn btn-sm btn-pup-outline-dark">
                         <i class="bi bi-eye"></i> Preview
                     </a>
                 @endif
-                <a href="{{ route('syllabi.download', $syllabus) }}" class="btn btn-sm btn-pup-outline-dark">
-                    <i class="bi bi-download"></i> Download
-                </a>
             </div>
         </div>
     @empty
@@ -95,46 +90,32 @@
     @endforelse
 </div>
 
-<div class="sh-panel-detail-section">
-    <h3>Actions</h3>
-    <div class="sh-panel-actions">
-        @auth
-            @if (auth()->user()->isAdmin() || auth()->user()->isIntern())
-                <a href="{{ route('courses.edit', $course) }}" class="btn btn-pup-outline-dark btn-sm">
-                    <i class="bi bi-pencil-square"></i> Edit subject
-                </a>
-                <form method="POST" action="{{ route('courses.destroy', $course) }}" onsubmit="return confirm('Are you sure you want to delete this course?');" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-pup-danger btn-sm">
-                        <i class="bi bi-trash"></i> Delete
-                    </button>
-                </form>
-            @elseif (auth()->user()->isFaculty() && $course->created_by === auth()->id())
-                @if ($course->hasPendingChangeRequest())
-                    <span class="sh-badge sh-badge-warning">A request is already pending</span>
-                @else
-                    <a href="{{ route('course-requests.edit-form', $course) }}" class="btn btn-pup-outline-dark btn-sm">
-                        <i class="bi bi-pencil-square"></i> Request edit
-                    </a>
-                    <form method="POST" action="{{ route('course-requests.delete', $course) }}" onsubmit="return confirm('Request deletion of this course? An admin will review it first.');" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-pup-danger btn-sm">
-                            <i class="bi bi-trash"></i> Request delete
-                        </button>
-                    </form>
-                @endif
-            @endif
-        @endauth
+@auth
+    @if (auth()->user()->role === 'admin')
+    <div class="sh-panel-detail-section">
+        <h3>Actions</h3>
+        <div class="sh-panel-actions">
+            <a href="{{ route('courses.edit', $course) }}" class="btn btn-pup-outline-dark btn-sm">
+                <i class="bi bi-pencil-square"></i> Edit subject
+            </a>
+            <form method="POST" action="{{ route('courses.destroy', $course) }}" onsubmit="return confirm('Are you sure you want to delete this course?');" style="display:inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-pup-danger btn-sm">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            </form>
 
-        @if ($course->latestSyllabus)
-            <a href="{{ route('syllabi.create', $course) }}" class="btn btn-pup-outline-dark btn-sm">
-                <i class="bi bi-arrow-repeat"></i> Replace syllabus
-            </a>
-        @else
-            <a href="{{ route('syllabi.create', $course) }}" class="btn btn-pup-primary btn-sm">
-                <i class="bi bi-upload"></i> Upload syllabus
-            </a>
-        @endif
+            @if ($course->latestSyllabus)
+                <a href="{{ route('syllabi.create', $course) }}" class="btn btn-pup-outline-dark btn-sm">
+                    <i class="bi bi-arrow-repeat"></i> Replace syllabus
+                </a>
+            @else
+                <a href="{{ route('syllabi.create', $course) }}" class="btn btn-pup-primary btn-sm">
+                    <i class="bi bi-upload"></i> Upload syllabus
+                </a>
+            @endif
+        </div>
     </div>
-</div>
+    @endif
+@endauth

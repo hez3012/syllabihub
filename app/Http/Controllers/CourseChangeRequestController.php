@@ -61,7 +61,7 @@ class CourseChangeRequestController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('courses.show', $course)
+        return redirect()->route('courses.index')
             ->with('status', 'Your edit request has been submitted and is awaiting admin approval. The course has not been changed yet.');
     }
 
@@ -77,7 +77,7 @@ class CourseChangeRequestController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('courses.show', $course)
+        return redirect()->route('courses.index')
             ->with('status', 'Your delete request has been submitted and is awaiting admin approval.');
     }
 

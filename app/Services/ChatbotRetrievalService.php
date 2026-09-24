@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Http\Controllers\SearchController;
 use App\Models\Course;
-use App\Models\CourseChangeRequest;
 use App\Models\Program;
 use App\Models\Syllabus;
 use App\Models\User;
@@ -80,7 +79,7 @@ class ChatbotRetrievalService
      * — Sage isn't inventing a new rule, just not accidentally handing
      * out through chat what the UI itself already keeps admin/intern-only.
      */
-    private const PRIVILEGED_ROLES = ['admin', 'intern'];
+    private const PRIVILEGED_ROLES = ['admin'];
 
     /**
      * @param  string  $type  a ChatbotQueryClassifier::* constant
@@ -585,31 +584,11 @@ class ChatbotRetrievalService
         // to repeat it, so there's no prompt-engineering trick that gets
         // it to leak the real figure to a Faculty account.
         if (preg_match('/faculty (account|user)s?|mga faculty account/i', $message)) {
-            if (!in_array($role, self::PRIVILEGED_ROLES, true)) {
-                return $this->restrictedResponse('faculty account details');
-            }
-
-            $count = User::where('role', 'faculty')->count();
-
-            return ['courses' => [], 'notes' => ["There are {$count} faculty accounts in the system."]];
+            return ['courses' => [], 'notes' => ['Faculty accounts have been removed from this system.']];
         }
 
         if (preg_match('/change request|edit request|request(s)? to edit|pending (na )?request/i', $message)) {
-            if (!in_array($role, self::PRIVILEGED_ROLES, true)) {
-                return $this->restrictedResponse('course change request details');
-            }
-
-            $pendingOnly = (bool) preg_match('/\bpending\b/i', $message);
-
-            $query = CourseChangeRequest::query();
-            $total = (clone $query)->count();
-            $pending = (clone $query)->where('status', 'pending')->count();
-
-            $notes = $pendingOnly
-                ? ["There are {$pending} pending course change requests awaiting review."]
-                : ["There are {$total} course change requests in total ({$pending} pending, " . ($total - $pending) . ' already reviewed).'];
-
-            return ['courses' => [], 'notes' => $notes];
+            return ['courses' => [], 'notes' => ['Change requests have been removed from this system.']];
         }
 
         // "Ilang units ang COMP 016?" — a specific course's own

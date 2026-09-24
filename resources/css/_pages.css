@@ -629,7 +629,7 @@ a.sh-request-item:hover {
     border: 1px solid var(--sh-border);
     border-radius: var(--radius-md);
     padding: var(--space-3) var(--space-4);
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
 }
 
 .sh-panel-syllabus-info {
@@ -1459,5 +1459,247 @@ a.sh-request-item:hover {
 .sh-empty-state-desc {
     font-size: var(--text-xs);
     color: var(--sh-text-muted);
+    margin: 0;
+}
+
+/* ============================================================
+   Audit Logs & Trails
+   ============================================================ */
+.sh-audit-tabs {
+    display: flex;
+    gap: var(--space-1);
+    margin-bottom: var(--space-5);
+    border-bottom: 2px solid var(--sh-border);
+    padding-bottom: 0;
+}
+
+.sh-audit-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    text-decoration: none;
+    color: var(--sh-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 150ms ease, border-color 150ms ease;
+}
+
+.sh-audit-tab:hover {
+    color: var(--sh-text-primary);
+}
+
+.sh-audit-tab.active {
+    color: var(--sh-red);
+    border-bottom-color: var(--sh-red);
+}
+
+.sh-audit-content {
+    background: var(--sh-panel);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.sh-table-wrap {
+    overflow-x: auto;
+}
+
+.sh-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+
+.sh-table thead {
+    background: var(--sh-red);
+    color: var(--sh-text-inverse);
+}
+
+.sh-table th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-weight: 600;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.sh-table td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--sh-border);
+    vertical-align: middle;
+}
+
+.sh-table tbody tr:hover {
+    background: var(--sh-surface);
+}
+
+.sh-table-name {
+    font-weight: 600;
+    color: var(--sh-text-primary);
+}
+
+.sh-table-email {
+    color: var(--sh-text-secondary);
+}
+
+.sh-table-mono {
+    font-family: var(--sh-font-mono);
+    font-size: var(--text-xs);
+    color: var(--sh-text-secondary);
+}
+
+.sh-table-date {
+    white-space: nowrap;
+    font-size: var(--text-xs);
+    color: var(--sh-text-muted);
+}
+
+.sh-table-details {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sh-trail-toggle {
+    background: var(--sh-red-pale);
+    color: var(--sh-red);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sh-font-family);
+    transition: background-color 150ms ease;
+}
+
+.sh-trail-toggle:hover {
+    background: var(--sh-red);
+    color: #fff;
+}
+
+.sh-trail-diff {
+    margin-top: var(--space-2);
+    background: var(--sh-surface);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+}
+
+.sh-diff-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    padding: 3px 0;
+}
+
+.sh-diff-key {
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    min-width: 80px;
+}
+
+.sh-diff-old {
+    color: var(--sh-danger);
+    text-decoration: line-through;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sh-diff-new {
+    color: var(--sh-success);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sh-text-muted {
+    color: var(--sh-text-muted);
+    font-size: var(--text-xs);
+}
+
+.d-none {
+    display: none;
+}
+
+.sh-pagination {
+    padding: var(--space-4);
+    display: flex;
+    justify-content: center;
+}
+
+.sh-pagination nav {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.sh-pagination a,
+.sh-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: background-color 150ms ease, color 150ms ease;
+}
+
+.sh-pagination a {
+    background: var(--sh-panel);
+    color: var(--sh-text-primary);
+    border: 1px solid var(--sh-border);
+}
+
+.sh-pagination a:hover {
+    background: var(--sh-red-pale);
+    border-color: var(--sh-red);
+}
+
+.sh-pagination .active span {
+    background: var(--sh-red);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ============================================================
+   Auth Pages (Login / Get Started)
+   ============================================================ */
+.auth-form-panel .form-control {
+    border: 2px solid var(--sh-text-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-form-panel .form-control:focus {
+    border-color: var(--sh-red);
+    box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.15);
+}
+
+.get-started-info {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+    text-align: center;
+}
+
+.get-started-info p {
+    font-size: var(--text-sm);
+    color: var(--sh-text-secondary);
     margin: 0;
 }

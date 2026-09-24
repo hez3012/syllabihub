@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditTrail;
 use App\Models\Course;
 use App\Models\Syllabus;
 use App\Services\SyllabusFileService;
@@ -11,33 +12,12 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Standalone syllabus upload page, plus download/preview.
- *
- * Storage: files go on the 'local' disk (storage/app/private — not
- * web-accessible directly). download()/preview() are the only ways to
- * reach a file's bytes — one controlled point of access instead of
- * guessable public URLs. All three require auth (CLAUDE.md §7).
- *
- * This is the "fast path" for faculty to jump straight to uploading —
- * CourseController::store()/update() also accept these same file_pdf/
- * file_docx fields inline on the Add/Edit Course forms, both delegating
- * to SyllabusFileService so the actual upload/replace logic lives in one
- * place. See that service for the validation rules and "replace, don't
- * append" behavior.
- *
- * Text extraction (raw_text, for SearchController's syllabus-content
- * search) runs synchronously right after each file is stored — see
- * SyllabusTextExtractor. No queue worker involved; status flips straight
- * to 'processed' or 'failed'.
- */
 class SyllabusController extends Controller
 {
     public function __construct(private readonly SyllabusFileService $files)
     {
     }
 
-    /** Dropdown options for curriculum_year — fixed floor per Rico (2026-08-12), floating ceiling at the current year. */
     public static function curriculumYearOptions(): array
     {
         $startYear = 2022;
@@ -76,8 +56,21 @@ class SyllabusController extends Controller
             $validated['curriculum_year'] ?? null
         );
 
+        $user = $request->user();
+        AuditTrail::create([
+            'full_name' => $user->name,
+            'email' => $user->email,
+            'action' => 'updated',
+            'subject_type' => Course::class,
+            'subject_id' => $course->id,
+            'description' => "Uploaded syllabus for: {$course->course_code} — {$course->title}",
+            'old_values' => null,
+            'new_values' => ['syllabus_files' => $notes],
+            'created_at' => now(),
+        ]);
+
         return redirect()
-            ->route('courses.show', $course)
+            ->route('courses.index')
             ->with('status', 'Uploaded: ' . implode(', ', $notes) . '.');
     }
 
@@ -93,7 +86,6 @@ class SyllabusController extends Controller
         return Storage::disk('local')->download($syllabus->file_path, $downloadName);
     }
 
-    /** Same file as download(), but inline disposition so a PDF renders in an <iframe> instead of forcing a download. */
     public function preview(Syllabus $syllabus): StreamedResponse
     {
         abort_if(!Storage::disk('local')->exists($syllabus->file_path), 404);

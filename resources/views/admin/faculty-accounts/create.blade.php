@@ -16,20 +16,29 @@
 
             <div class="sh-upload-field">
                 <label class="form-label">Name</label>
-                <input type="text" name="name" class="form-control" value="{{ old('name') }}" required
+                <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required
                        placeholder="e.g., Maria Santos">
+                @error('name')
+                    <div class="sh-field-error">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="sh-upload-field">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" value="{{ old('email') }}" required
+                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required
                        placeholder="e.g., msantos@pup.edu.ph">
+                @error('email')
+                    <div class="sh-field-error">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="sh-upload-field">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required minlength="8"
+                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required minlength="8"
                        placeholder="Minimum 8 characters">
+                @error('password')
+                    <div class="sh-field-error">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="sh-upload-field">

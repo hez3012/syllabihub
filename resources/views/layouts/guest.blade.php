@@ -34,13 +34,7 @@
                         @if ($errors->any())
                             <div class="toast-item toast-error">
                                 <i class="bi bi-exclamation-circle-fill"></i>
-                                <div class="toast-body">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                                <div class="toast-body">{{ $errors->first() }}</div>
                                 <button type="button" class="toast-close" aria-label="Dismiss">&times;</button>
                             </div>
                         @endif

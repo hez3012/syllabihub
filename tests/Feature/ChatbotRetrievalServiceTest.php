@@ -485,7 +485,7 @@ class ChatbotRetrievalServiceTest extends TestCase
         // DB-level SUM() on a DECIMAL column preserves scale (e.g.
         // "42.0"), but retrieveStats() sums an already-loaded Collection
         // in plain PHP, which prints "42" with no trailing zero.
-        $bsitCourses = Course::whereHas('program', fn ($q) => $q->where('code', 'BSIT'))->get();
+        $bsitCourses = Course::whereHas('programs', fn ($q) => $q->where('code', 'BSIT'))->get();
         $expectedCount = $bsitCourses->count();
         $expectedUnits = $bsitCourses->sum('credited_units');
 
@@ -606,7 +606,7 @@ class ChatbotRetrievalServiceTest extends TestCase
         // it's simulating a stale number from an earlier turn, which is
         // exactly what this test proves gets ignored; it doesn't need to
         // match today's real BSIT count.)
-        $expectedCount = Course::whereHas('program', fn ($q) => $q->where('code', 'BSIT'))->count();
+        $expectedCount = Course::whereHas('programs', fn ($q) => $q->where('code', 'BSIT'))->count();
 
         $history = [
             ['role' => 'user', 'content' => 'How many courses existing sa BSIT 2nd Year?'],
@@ -754,8 +754,8 @@ class ChatbotRetrievalServiceTest extends TestCase
     {
         // Computed live, not hardcoded — see test_stats_aggregate_totals_
         // bsit_curriculum's docblock above for why.
-        $bsitCount = Course::whereHas('program', fn ($q) => $q->where('code', 'BSIT'))->count();
-        $ditCount = Course::whereHas('program', fn ($q) => $q->where('code', 'DIT'))->count();
+        $bsitCount = Course::whereHas('programs', fn ($q) => $q->where('code', 'BSIT'))->count();
+        $ditCount = Course::whereHas('programs', fn ($q) => $q->where('code', 'DIT'))->count();
 
         $result = $this->retrieval->retrieve(Type::PROGRAM_COMPARISON, 'Ano ang pagkakaiba ng BSIT at DIT curriculum?');
 
@@ -772,7 +772,7 @@ class ChatbotRetrievalServiceTest extends TestCase
 
     public function test_course_category_filters_by_code_prefix(): void
     {
-        $program = Course::where('course_code', 'COMP 001')->value('program_id');
+        $program = Course::where('course_code', 'COMP 001')->first()->programs()->first()->id;
         Course::factory()->create(['program_id' => $program, 'course_code' => 'GEED 032', 'title' => 'Life and Works of Rizal']);
 
         $result = $this->retrieval->retrieve(Type::COURSE_CATEGORY, 'Ano-anong courses ang GEED?');

@@ -38,6 +38,21 @@
     --sh-info:         #1E40AF;
     --sh-info-bg:      #DBEAFE;
 
+    /* --- Form fields (border level matches .btn-pup-outline-dark) --- */
+    --sh-field-border:      var(--sh-border-dark);
+    --sh-field-border-hover: var(--sh-red);
+    --sh-field-radius:      6px;
+    --sh-field-bg:          #FFFFFF;
+    --sh-field-tint:        #F3DADD;
+    --sh-field-tint-deep:   #EDCDD2;
+    --sh-field-placeholder: #8A7076;
+    --sh-field-disabled:    #E7E5E1;
+
+    /* --- Form sections (containers) --- */
+    --sh-section-bg:        #FBEFF1;
+    --sh-section-border:    var(--sh-border-dark);
+    --sh-badge-bg:          #7B1020;
+
     /* --- Layout --- */
     --sh-sidebar-width: 240px;
     --sh-sidebar-collapsed: 64px;
@@ -47,6 +62,7 @@
 
     /* --- Typography --- */
     --sh-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sh-font-mono: 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
 
     --text-xs:   0.75rem;
     --text-sm:   0.875rem;

@@ -15,11 +15,18 @@
             @csrf
             @include('courses._form', ['course' => null])
 
-            <div class="sh-upload-field" style="margin-top:var(--space-5);padding-top:var(--space-5);border-top:1px solid var(--sh-border);">
-                <label class="form-label" style="font-weight:600;">Syllabus File <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-                <p class="sh-upload-note" style="margin-top:0;">You may upload a file here now, or upload/replace it later from the course page.</p>
-                @include('courses._syllabus-file-fields')
-            </div>
+            <fieldset class="sh-form-section">
+                <legend class="sh-form-section-head">
+                    <span class="sh-form-section-badge">5</span>
+                    <span class="sh-form-section-titles">
+                        <span class="sh-form-section-title">Syllabus File <span class="sh-label-chip">Optional</span></span>
+                        <span class="sh-form-section-hint">Attach a syllabus now, or upload it later from the course page.</span>
+                    </span>
+                </legend>
+                <div class="sh-form-section-body">
+                    @include('courses._syllabus-file-fields')
+                </div>
+            </fieldset>
 
             <div class="sh-upload-actions">
                 <a href="{{ route('courses.index') }}" class="btn btn-pup-outline-dark">Cancel</a>

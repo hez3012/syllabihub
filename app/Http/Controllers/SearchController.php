@@ -96,7 +96,7 @@ class SearchController extends Controller
                 ->select('courses.*')
                 ->selectRaw('MATCH(course_code, title) AGAINST(? IN BOOLEAN MODE) as relevance', [$boolean])
                 ->whereRaw('MATCH(course_code, title) AGAINST(? IN BOOLEAN MODE)', [$boolean])
-                ->with(['program', 'latestSyllabus'])
+                ->with(['programs', 'latestSyllabus'])
                 ->orderByDesc('relevance')
                 ->limit(self::MAX_RESULTS)
                 ->get();
@@ -114,7 +114,7 @@ class SearchController extends Controller
         $needle = strtolower($query);
         $needleCompact = preg_replace('/\s+/', '', $needle);
 
-        $courses = Course::with(['program', 'latestSyllabus'])->get();
+        $courses = Course::with(['programs', 'latestSyllabus'])->get();
 
         $scored = [];
 
@@ -176,7 +176,7 @@ class SearchController extends Controller
             ->selectRaw('MATCH(raw_text) AGAINST(? IN BOOLEAN MODE) as relevance', [$boolean])
             ->whereRaw('MATCH(raw_text) AGAINST(? IN BOOLEAN MODE)', [$boolean])
             ->whereNotNull('raw_text')
-            ->with('course.program')
+            ->with('course.programs')
             ->orderByDesc('relevance')
             ->limit(self::MAX_RESULTS)
             ->get();
@@ -190,9 +190,9 @@ class SearchController extends Controller
                     'course_id' => $course->id,
                     'course_code' => $course->course_code,
                     'title' => $course->title,
-                    'program' => $course->program?->code,
-                    'year_level' => $course->year_level,
-                    'semester' => $course->semester,
+                    'program' => $course->programLabel() ?: null,
+                    'year_level' => $course->yearLevelValue(),
+                    'semester' => $course->semesterValue(),
                     'match_type' => 'syllabus_content',
                     'score' => 92.0,
                     'has_syllabus' => true,
@@ -275,9 +275,9 @@ class SearchController extends Controller
             'course_id' => $course->id,
             'course_code' => $course->course_code,
             'title' => $course->title,
-            'program' => $course->program?->code,
-            'year_level' => $course->year_level,
-            'semester' => $course->semester,
+            'program' => $course->programLabel() ?: null,
+            'year_level' => $course->yearLevelValue(),
+            'semester' => $course->semesterValue(),
             'prerequisite' => $course->prerequisite,
             'corequisite' => $course->corequisite,
             'lecture_hours' => $course->lecture_hours,

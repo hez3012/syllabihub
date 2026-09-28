@@ -121,7 +121,7 @@
         <div class="sh-review-reject-group">
             <form method="POST" action="{{ route('course-requests.reject', $changeRequest) }}" class="sh-review-reject-form">
                 @csrf
-                <input type="text" name="review_note" placeholder="Rejection note (optional)" class="form-control form-control-sm" maxlength="255">
+                <input type="text" name="review_note" placeholder="Rejection note (optional)" aria-label="Rejection note" class="form-control form-control-sm" maxlength="255">
                 <button type="submit" class="btn btn-pup-danger">
                     <i class="bi bi-x-lg"></i> Reject
                 </button>

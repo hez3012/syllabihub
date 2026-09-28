@@ -52,11 +52,19 @@ class CourseSeeder extends Seeder
             ['program_id' => $dit->id, 'course_code' => 'DIT 103', 'title' => 'Advanced Web and Mobile Development', 'year_level' => 2, 'semester' => '1st', 'lecture_hours' => 2, 'lab_hours' => 3, 'credited_units' => 3],
         ];
 
-        foreach ($courses as $course) {
-            Course::updateOrCreate(
-                ['program_id' => $course['program_id'], 'course_code' => $course['course_code']],
-                $course
-            );
+        foreach ($courses as $row) {
+            $programId = $row['program_id'];
+            $yearLevel = $row['year_level'];
+            $semester = $row['semester'];
+            unset($row['program_id'], $row['year_level'], $row['semester']);
+
+            $course = Course::updateOrCreate(['course_code' => $row['course_code']], $row);
+
+            // Placement lives on the course_program pivot now, so the same
+            // course can sit in both BSIT and DIT with its own year/semester.
+            $course->programs()->syncWithoutDetaching([
+                $programId => ['year_level' => $yearLevel, 'semester' => $semester],
+            ]);
         }
 
         $this->command?->info('Seeded ' . count($courses) . ' test courses.');

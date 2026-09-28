@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Program extends Model
 {
@@ -11,8 +12,10 @@ class Program extends Model
 
     protected $fillable = ['code', 'name'];
 
-    public function courses()
+    public function courses(): BelongsToMany
     {
-        return $this->hasMany(Course::class);
+        return $this->belongsToMany(Course::class, 'course_program')
+            ->withPivot(['year_level', 'semester'])
+            ->withTimestamps();
     }
 }

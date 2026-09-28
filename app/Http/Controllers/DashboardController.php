@@ -18,13 +18,13 @@ class DashboardController extends Controller
             'courses as with_syllabus_count' => function ($q) {
                 $q->whereHas('syllabi');
             },
-        ])->get();
+        ])->having('total_courses', '>', 0)->get();
 
         $totalCourses = Course::count();
         $withSyllabus = Course::whereHas('syllabi')->count();
         $missing = $totalCourses - $withSyllabus;
 
-        $missingCourses = Course::with(['program'])
+        $missingCourses = Course::with(['programs'])
             ->whereDoesntHave('syllabi')
             ->orderBy('course_code')
             ->limit(10)

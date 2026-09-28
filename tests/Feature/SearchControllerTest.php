@@ -23,11 +23,17 @@ use Tests\TestCase;
  * program_id, Syllabus's uploaded_by) — which would commit for real too
  * and never get cleaned up — helpers below reuse an existing Program/User
  * instead of creating throwaway ones. Only Course/Syllabus rows (the
- * things these tests actually exercise) get created and tracked.
+ * things these tests actually exercise) get created and tracked. The
+ * create-if-missing fallbacks still track what they create so tearDown()
+ * can remove those too.
  */
 class SearchControllerTest extends TestCase
 {
     private array $courseIds = [];
+
+    private array $programIds = [];
+
+    private array $userIds = [];
 
     protected function setUp(): void
     {
@@ -44,13 +50,20 @@ class SearchControllerTest extends TestCase
     {
         Syllabus::withTrashed()->whereIn('course_id', $this->courseIds)->forceDelete();
         Course::withTrashed()->whereIn('id', $this->courseIds)->forceDelete();
+        Program::whereIn('id', $this->programIds)->delete();
+        User::whereIn('id', $this->userIds)->delete();
 
         parent::tearDown();
     }
 
     private function makeCourse(array $attributes = []): Course
     {
-        $programId = Program::query()->value('id') ?? Program::factory()->create()->id;
+        $programId = Program::query()->value('id');
+
+        if ($programId === null) {
+            $programId = Program::factory()->create()->id;
+            $this->programIds[] = $programId;
+        }
 
         $course = Course::factory()->create(array_merge(['program_id' => $programId], $attributes));
         $this->courseIds[] = $course->id;
@@ -60,7 +73,14 @@ class SearchControllerTest extends TestCase
 
     private function existingUserId(): int
     {
-        return User::query()->value('id') ?? User::factory()->create()->id;
+        $userId = User::query()->value('id');
+
+        if ($userId === null) {
+            $userId = User::factory()->create()->id;
+            $this->userIds[] = $userId;
+        }
+
+        return $userId;
     }
 
     public function test_exact_course_code_match_via_fulltext(): void

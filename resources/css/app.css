@@ -699,35 +699,100 @@ a {
 }
 
 /* ============================================================
-   Form inputs (v2)
+   Form inputs — soft border, not thick (1.5px, same level as .btn-pup-outline-dark)
+   White at rest, red tint on hover, clears + maroon on focus.
    ============================================================ */
 .form-control, .form-select {
-    border: 1px solid var(--sh-border);
-    border-radius: var(--radius-md);
+    border: 1.5px solid var(--sh-field-border);
+    border-radius: var(--sh-field-radius);
+    background-color: var(--sh-field-bg);
+    padding: 10px 12px;
+    font-size: 14px;
     font-family: var(--sh-font-family);
     color: var(--sh-text-primary);
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.form-control:hover:not(:disabled):not(:focus),
+.form-select:hover:not(:disabled):not(:focus) {
+    background-color: var(--sh-field-tint);
+    border-color: var(--sh-field-border-hover);
 }
 
 .form-control:focus, .form-select:focus {
+    background-color: var(--sh-field-bg);
     border-color: var(--sh-red);
-    box-shadow: 0 0 0 3px rgba(139, 21, 32, 0.12);
+    box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.18);
 }
 
 .form-control::placeholder {
-    color: var(--sh-text-muted);
+    color: var(--sh-field-placeholder);
 }
 
 .form-control:disabled, .form-select:disabled {
-    background: var(--sh-surface);
+    background-color: var(--sh-field-disabled);
+    color: var(--sh-text-secondary);
     cursor: not-allowed;
+    opacity: 1;
 }
 
 .form-label {
-    font-size: var(--text-sm);
-    font-weight: 500;
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--sh-text-primary);
     margin-bottom: var(--space-1);
+    text-align: left;
+}
+
+.sh-label-chip {
+    display: inline-block;
+    margin-left: var(--space-2);
+    padding: 1px 6px;
+    border: 1px solid var(--sh-border-dark);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sh-text-secondary);
+    vertical-align: middle;
+    line-height: 1.5;
+}
+
+.sh-label-chip-required {
+    border-color: var(--sh-red);
+    color: var(--sh-red);
+}
+
+.sh-label-req {
+    color: var(--sh-red);
+    margin-left: 2px;
+}
+
+/* Checkbox / radio slots — same border language */
+.form-check-input {
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: 0.1em;
+    background-color: var(--sh-field-bg);
+    border: 1.5px solid var(--sh-field-border);
+    transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.form-check-input:hover {
+    background-color: var(--sh-field-tint);
+    border-color: var(--sh-red);
+}
+
+.form-check-input:checked {
+    background-color: var(--sh-red);
+    border-color: var(--sh-red);
+}
+
+.form-check-input:focus {
+    border-color: var(--sh-red);
+    box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.18);
 }
 
 /* ============================================================
@@ -742,8 +807,10 @@ a {
 
 .is-invalid {
     border-color: var(--sh-danger) !important;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+    background-color: #FFF5F5 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.14) !important;
 }
+
 
 /* ============================================================
    Sage spinner bubble

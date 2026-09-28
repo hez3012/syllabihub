@@ -2,13 +2,16 @@
      NOT courses.request-edit (that form doesn't handle files).
      Expects $curriculumYears. --}}
 <div class="sh-upload-field">
-    <label class="form-label">Curriculum Year (required if uploading a file)</label>
-    <select name="curriculum_year" class="form-select" style="max-width: 200px;">
+    <label class="form-label" for="sh-curriculum-year">Curriculum Year <span class="sh-label-chip sh-label-chip-required">Required if uploading</span></label>
+    <select name="curriculum_year" id="sh-curriculum-year" class="form-select sh-field-narrow @error('curriculum_year') is-invalid @enderror">
         <option value="">Select year</option>
         @foreach ($curriculumYears as $year)
             <option value="{{ $year }}" @selected(old('curriculum_year') === $year)>{{ $year }}</option>
         @endforeach
     </select>
+    @error('curriculum_year')
+        <div class="sh-field-error">{{ $message }}</div>
+    @enderror
 </div>
 
 <div class="sh-upload-zone" data-upload-zone data-input="file_pdf">

@@ -34,23 +34,35 @@
             @if ($filters['program'] ?? null)
                 <input type="hidden" name="program" value="{{ $filters['program'] }}">
             @endif
+            @php
+                $yearOptions = ['' => 'Year: All', '1' => '1st Year', '2' => '2nd Year', '3' => '3rd Year', '4' => '4th Year'];
+                $semesterOptions = ['' => 'Sem: All', '1st' => '1st Semester', '2nd' => '2nd Semester', 'summer' => 'Summer'];
+                $currentYear = (string) ($filters['year_level'] ?? '');
+                $currentSemester = (string) ($filters['semester'] ?? '');
+            @endphp
             <div class="sh-filter-dropdown">
-                <i class="bi bi-calendar3"></i>
-                <select name="year_level" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">Year: All</option>
-                    @foreach ([1 => '1st Year', 2 => '2nd Year', 3 => '3rd Year', 4 => '4th Year'] as $value => $label)
-                        <option value="{{ $value }}" @selected((string) ($filters['year_level'] ?? '') === (string) $value)>{{ $label }}</option>
+                <input type="hidden" name="year_level" value="{{ $currentYear }}">
+                <button type="button" class="sh-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by year level">
+                    <span class="sh-filter-value">{{ $yearOptions[$currentYear] ?? 'Year: All' }}</span>
+                </button>
+                <ul class="sh-filter-menu" role="listbox" aria-label="Filter by year level" hidden>
+                    @foreach ($yearOptions as $value => $label)
+                        <li class="sh-filter-option" role="option" data-value="{{ $value }}" tabindex="-1"
+                            aria-selected="{{ $currentYear === (string) $value ? 'true' : 'false' }}">{{ $label }}</li>
                     @endforeach
-                </select>
+                </ul>
             </div>
             <div class="sh-filter-dropdown">
-                <i class="bi bi-clock-history"></i>
-                <select name="semester" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">Sem: All</option>
-                    <option value="1st" @selected(($filters['semester'] ?? null) === '1st')>1st Semester</option>
-                    <option value="2nd" @selected(($filters['semester'] ?? null) === '2nd')>2nd Semester</option>
-                    <option value="summer" @selected(($filters['semester'] ?? null) === 'summer')>Summer</option>
-                </select>
+                <input type="hidden" name="semester" value="{{ $currentSemester }}">
+                <button type="button" class="sh-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by semester">
+                    <span class="sh-filter-value">{{ $semesterOptions[$currentSemester] ?? 'Sem: All' }}</span>
+                </button>
+                <ul class="sh-filter-menu" role="listbox" aria-label="Filter by semester" hidden>
+                    @foreach ($semesterOptions as $value => $label)
+                        <li class="sh-filter-option" role="option" data-value="{{ $value }}" tabindex="-1"
+                            aria-selected="{{ $currentSemester === (string) $value ? 'true' : 'false' }}">{{ $label }}</li>
+                    @endforeach
+                </ul>
             </div>
             @if (($filters['year_level'] ?? null) || ($filters['semester'] ?? null))
                 <a href="{{ route('courses.index', request()->only('program')) }}" class="btn btn-sm btn-pup-outline-dark">
@@ -67,9 +79,10 @@
                 <tr>
                     <th style="width:120px;">Code</th>
                     <th>Title</th>
+                    <th style="width:110px;">Program</th>
                     <th style="width:80px;">Units</th>
-                    <th style="width:110px;">Year Level</th>
-                    <th style="width:110px;">Semester</th>
+                    <th style="width:150px;">Year Level</th>
+                    <th style="width:150px;">Semester</th>
                     <th style="width:90px;">Syllabus</th>
                     <th style="width:60px;"></th>
                 </tr>
@@ -79,6 +92,7 @@
                     <tr class="sh-clickable-row" data-course-id="{{ $course->id }}">
                         <td><span class="course-code-tag {{ str_starts_with($course->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $course->course_code }}</span></td>
                         <td><span class="sh-table-link">{{ $course->title }}</span></td>
+                        <td class="text-muted">{{ $course->programLabel() ?: '—' }}</td>
                         <td class="text-muted">{{ $course->credited_units ?? '—' }}</td>
                         <td class="text-muted">{{ $course->yearLevelLabel() }}</td>
                         <td class="text-muted">{{ $course->semesterLabel() }}</td>
@@ -95,7 +109,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="empty-state">
                                 <i class="bi bi-book"></i>
                                 <h3>No subjects found</h3>
@@ -141,6 +155,109 @@
         var closeBtn = document.getElementById('sh-subject-close');
         var panelContent = document.getElementById('sh-panel-content');
         var breadcrumb = document.getElementById('sh-panel-breadcrumb');
+
+        // ---- Custom Year / Semester filter dropdowns (accessible listbox) ----
+        var filterDropdowns = Array.prototype.slice.call(document.querySelectorAll('.sh-filter-dropdown'));
+
+        function closeFilterMenus(except) {
+            filterDropdowns.forEach(function (dropdown) {
+                if (dropdown === except) return;
+                var trigger = dropdown.querySelector('.sh-filter-trigger');
+                var menu = dropdown.querySelector('.sh-filter-menu');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                if (menu) menu.hidden = true;
+            });
+        }
+
+        filterDropdowns.forEach(function (dropdown) {
+            var trigger = dropdown.querySelector('.sh-filter-trigger');
+            var menu = dropdown.querySelector('.sh-filter-menu');
+            var hidden = dropdown.querySelector('input[type="hidden"]');
+            var valueEl = dropdown.querySelector('.sh-filter-value');
+            var options = Array.prototype.slice.call(dropdown.querySelectorAll('.sh-filter-option'));
+            var form = dropdown.closest('form');
+            if (!trigger || !menu || !hidden || !valueEl || !form) return;
+
+            function isOpen() { return trigger.getAttribute('aria-expanded') === 'true'; }
+
+            function openMenu(focusLast) {
+                closeFilterMenus(dropdown);
+                trigger.setAttribute('aria-expanded', 'true');
+                menu.hidden = false;
+                var target = options[0];
+                options.forEach(function (option) {
+                    if (option.getAttribute('aria-selected') === 'true') target = option;
+                });
+                if (focusLast) target = options[options.length - 1];
+                if (target) target.focus();
+            }
+
+            function closeMenu(refocus) {
+                trigger.setAttribute('aria-expanded', 'false');
+                menu.hidden = true;
+                if (refocus) trigger.focus();
+            }
+
+            function selectOption(option) {
+                var value = option.dataset.value;
+                var changed = hidden.value !== value;
+                hidden.value = value;
+                valueEl.textContent = option.textContent.trim();
+                options.forEach(function (option_) {
+                    option_.setAttribute('aria-selected', option_ === option ? 'true' : 'false');
+                });
+                closeMenu(true);
+                if (changed) form.submit();
+            }
+
+            trigger.addEventListener('click', function () {
+                if (isOpen()) closeMenu(false); else openMenu(false);
+            });
+
+            trigger.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowDown') { e.preventDefault(); openMenu(false); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); openMenu(true); }
+                else if (e.key === 'Escape' && isOpen()) { e.preventDefault(); closeMenu(true); }
+            });
+
+            menu.addEventListener('click', function (e) {
+                var option = e.target.closest('.sh-filter-option');
+                if (option) selectOption(option);
+            });
+
+            menu.addEventListener('keydown', function (e) {
+                var index = options.indexOf(document.activeElement);
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    options[Math.min(index + 1, options.length - 1)].focus();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (index <= 0) { trigger.focus(); closeMenu(false); }
+                    else options[index - 1].focus();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    options[0].focus();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    options[options.length - 1].focus();
+                } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    var active = document.activeElement;
+                    if (active && active.classList.contains('sh-filter-option')) selectOption(active);
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeMenu(true);
+                } else if (e.key === 'Tab') {
+                    closeMenu(false);
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!dropdown.contains(e.target)) closeMenu(false);
+            });
+        });
+        // ---- End filter dropdowns ----
 
         if (!table || !panel) return;
 

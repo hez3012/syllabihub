@@ -12,76 +12,102 @@
 
         <div class="sh-upload-form-header">
             <div>
-                <h1 class="sh-page-title" style="font-size: var(--text-2xl);">Upload Syllabus</h1>
+                <h1 class="sh-section-title" style="font-size: var(--text-2xl);">Replace Syllabus</h1>
                 <p class="sh-upload-course-label">{{ $course->course_code }} — {{ $course->title }}</p>
             </div>
         </div>
 
         <div class="sh-upload-card">
-            {{-- Curriculum Year --}}
-            <div class="sh-upload-field">
-                <label class="form-label">Curriculum Year</label>
-                <select name="curriculum_year" class="form-select" style="max-width: 200px;" required>
-                    <option value="">Select year</option>
-                    @foreach ($curriculumYears as $year)
-                        <option value="{{ $year }}" @selected(old('curriculum_year') === $year)>{{ $year }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- PDF drop zone --}}
-            <div class="sh-upload-zone" id="sh-drop-pdf" data-input="file_pdf">
-                <input type="file" name="file_pdf" id="file_pdf" accept=".pdf" class="sh-upload-input">
-                <div class="sh-upload-zone-content">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <div class="sh-upload-zone-title">PDF Syllabus</div>
-                    <div class="sh-upload-zone-hint">Drop PDF here or <span class="sh-upload-browse">click to browse</span></div>
-                    <div class="sh-upload-zone-limit">Accepted: .pdf — Max: 200MB</div>
+            {{-- 1 — Curriculum year --}}
+            <fieldset class="sh-form-section">
+                <legend class="sh-form-section-head">
+                    <span class="sh-form-section-badge">1</span>
+                    <span class="sh-form-section-titles">
+                        <span class="sh-form-section-title">Curriculum Year</span>
+                        <span class="sh-form-section-hint">Which curriculum offering this syllabus belongs to.</span>
+                    </span>
+                </legend>
+                <div class="sh-form-section-body">
+                    <div class="sh-upload-field">
+                        <label class="form-label" for="sh-curriculum-year">Year <span class="sh-label-req">*</span></label>
+                        <select name="curriculum_year" id="sh-curriculum-year" class="form-select sh-field-narrow @error('curriculum_year') is-invalid @enderror" required>
+                            <option value="">Select year</option>
+                            @foreach ($curriculumYears as $year)
+                                <option value="{{ $year }}" @selected(old('curriculum_year') === $year)>{{ $year }}</option>
+                            @endforeach
+                        </select>
+                        @error('curriculum_year')
+                            <div class="sh-field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
-                <div class="sh-upload-zone-file d-none">
-                    <div class="sh-upload-file-info">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <div>
-                            <div class="sh-upload-file-name"></div>
-                            <div class="sh-upload-file-size"></div>
+            </fieldset>
+
+            {{-- 2 — Files --}}
+            <fieldset class="sh-form-section">
+                <legend class="sh-form-section-head">
+                    <span class="sh-form-section-badge">2</span>
+                    <span class="sh-form-section-titles">
+                        <span class="sh-form-section-title">Syllabus File <span class="sh-label-req">*</span></span>
+                        <span class="sh-form-section-hint">Drop a PDF or DOCX below. Uploading replaces the existing file of the same type.</span>
+                    </span>
+                </legend>
+                <div class="sh-form-section-body">
+                    {{-- PDF drop zone --}}
+                    <div class="sh-upload-zone" id="sh-drop-pdf" data-input="file_pdf">
+                        <input type="file" name="file_pdf" id="file_pdf" accept=".pdf" class="sh-upload-input">
+                        <div class="sh-upload-zone-content">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <div class="sh-upload-zone-title">PDF Syllabus</div>
+                            <div class="sh-upload-zone-hint">Drop PDF here or <span class="sh-upload-browse">click to browse</span></div>
+                            <div class="sh-upload-zone-limit">Accepted: .pdf — Max: 200MB</div>
+                        </div>
+                        <div class="sh-upload-zone-file d-none">
+                            <div class="sh-upload-file-info">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <div>
+                                    <div class="sh-upload-file-name"></div>
+                                    <div class="sh-upload-file-size"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="sh-upload-remove" aria-label="Remove file">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </div>
                     </div>
-                    <button type="button" class="sh-upload-remove" aria-label="Remove file">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>
-            @error('file_pdf')
-                <div class="sh-upload-error">{{ $message }}</div>
-            @enderror
+                    @error('file_pdf')
+                        <div class="sh-upload-error">{{ $message }}</div>
+                    @enderror
 
-            {{-- DOCX drop zone --}}
-            <div class="sh-upload-zone" id="sh-drop-docx" data-input="file_docx">
-                <input type="file" name="file_docx" id="file_docx" accept=".docx" class="sh-upload-input">
-                <div class="sh-upload-zone-content">
-                    <i class="bi bi-file-earmark-word"></i>
-                    <div class="sh-upload-zone-title">DOCX Syllabus</div>
-                    <div class="sh-upload-zone-hint">Drop DOCX here or <span class="sh-upload-browse">click to browse</span></div>
-                    <div class="sh-upload-zone-limit">Accepted: .docx — Max: 200MB</div>
-                </div>
-                <div class="sh-upload-zone-file d-none">
-                    <div class="sh-upload-file-info">
-                        <i class="bi bi-file-earmark-word"></i>
-                        <div>
-                            <div class="sh-upload-file-name"></div>
-                            <div class="sh-upload-file-size"></div>
+                    {{-- DOCX drop zone --}}
+                    <div class="sh-upload-zone" id="sh-drop-docx" data-input="file_docx">
+                        <input type="file" name="file_docx" id="file_docx" accept=".docx" class="sh-upload-input">
+                        <div class="sh-upload-zone-content">
+                            <i class="bi bi-file-earmark-word"></i>
+                            <div class="sh-upload-zone-title">DOCX Syllabus</div>
+                            <div class="sh-upload-zone-hint">Drop DOCX here or <span class="sh-upload-browse">click to browse</span></div>
+                            <div class="sh-upload-zone-limit">Accepted: .docx — Max: 200MB</div>
+                        </div>
+                        <div class="sh-upload-zone-file d-none">
+                            <div class="sh-upload-file-info">
+                                <i class="bi bi-file-earmark-word"></i>
+                                <div>
+                                    <div class="sh-upload-file-name"></div>
+                                    <div class="sh-upload-file-size"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="sh-upload-remove" aria-label="Remove file">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </div>
                     </div>
-                    <button type="button" class="sh-upload-remove" aria-label="Remove file">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-            </div>
-            @error('file_docx')
-                <div class="sh-upload-error">{{ $message }}</div>
-            @enderror
+                    @error('file_docx')
+                        <div class="sh-upload-error">{{ $message }}</div>
+                    @enderror
 
-            <p class="sh-upload-note">At least one file is required. Uploading a new file replaces the existing file of the same type.</p>
+                    <p class="sh-upload-note">At least one file is required. Uploading a new file replaces the existing file of the same type.</p>
+                </div>
+            </fieldset>
 
             <div class="sh-upload-actions">
                 <a href="{{ route('courses.index') }}" class="btn btn-pup-outline-dark">Cancel</a>

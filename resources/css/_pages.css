@@ -15,19 +15,15 @@
 
 .sh-stat-card {
     background: var(--sh-panel);
-    border: 1px solid var(--sh-border);
+    border: 1px solid var(--sh-border-dark);
     border-radius: var(--radius-lg);
     padding: var(--space-5);
-    transition: box-shadow 150ms ease;
+    transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 
 .sh-stat-card:hover {
     box-shadow: var(--shadow-md);
-}
-
-.sh-stat-card-overall {
     border-color: var(--sh-red);
-    border-width: 2px;
 }
 
 .sh-stat-card-header {
@@ -96,18 +92,18 @@
     }
 }
 
-.sh-dashboard-section {
-    background: var(--sh-panel);
-    border: 1px solid var(--sh-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-}
-
+.sh-dashboard-section,
 .sh-dashboard-section-full {
     background: var(--sh-panel);
-    border: 1px solid var(--sh-border);
+    border: 1px solid var(--sh-border-dark);
     border-radius: var(--radius-lg);
     padding: var(--space-5);
+    transition: border-color 150ms ease;
+}
+
+.sh-dashboard-section:hover,
+.sh-dashboard-section-full:hover {
+    border-color: var(--sh-red);
 }
 
 /* ============================================================
@@ -388,7 +384,7 @@ a.sh-request-item:hover {
 .sh-filter-tabs {
     display: inline-flex;
     background: var(--sh-panel);
-    border: 2px solid var(--sh-border);
+    border: 1.5px solid var(--sh-field-border);
     border-radius: var(--radius-lg);
     padding: 4px;
     gap: 4px;
@@ -429,8 +425,8 @@ a.sh-request-item:hover {
    ============================================================ */
 .sh-pending-banner {
     background: var(--sh-warning-bg);
-    border: 1px solid #fde68a;
-    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--sh-field-border);
+    border-radius: 10px;
     padding: var(--space-3) var(--space-4);
     margin-bottom: var(--space-4);
 }
@@ -713,24 +709,252 @@ a.sh-request-item:hover {
 
 .sh-upload-card {
     background: var(--sh-panel);
-    border: 1px solid var(--sh-border);
+    border: 1.5px solid var(--sh-section-border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
 }
 
 .sh-upload-field {
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-4);
 }
 
 .sh-upload-field .form-label {
+    font-weight: 700;
+}
+
+/* ------------------------------------------------------------
+   Form sections — tinted container, soft border, maroon badge.
+   The border lives on the legend + body (not the fieldset) so
+   Chrome's legend "border break" notch never appears.
+   ------------------------------------------------------------ */
+.sh-form-section,
+fieldset.sh-form-section {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.sh-form-section-head,
+legend.sh-form-section-head {
+    float: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
+    padding: 10px var(--space-4);
+    background: var(--sh-section-bg);
+    border: 1px solid var(--sh-section-border);
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    cursor: default;
+}
+
+.sh-form-section-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    background: var(--sh-badge-bg);
+    color: var(--sh-text-inverse);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.sh-form-section-badge-danger {
+    background: var(--sh-danger);
+}
+
+.sh-form-section-titles {
+    display: block;
+    min-width: 0;
+}
+
+.sh-form-section-title {
+    display: block;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sh-text-primary);
+    line-height: 1.25;
+}
+
+.sh-form-section-hint {
+    display: block;
+    margin: 2px 0 0;
+    font-size: var(--text-xs);
+    color: var(--sh-text-secondary);
+    line-height: 1.35;
+}
+
+.sh-form-section-body {
+    display: block;
+    padding: var(--space-5);
+    background: var(--sh-section-bg);
+    border: 1px solid var(--sh-section-border);
+    border-top: 1px solid var(--sh-section-border);
+    border-radius: 0 0 10px 10px;
+}
+
+.sh-form-section-body > .sh-upload-field:last-child,
+.sh-form-section-body > .sh-form-grid:last-child {
+    margin-bottom: 0;
+}
+
+.sh-form-section legend.sh-form-section-title {
+    float: none;
+    width: auto;
+    font-size: 15px;
+}
+
+/* Field grids — friendly widths instead of full-width rows */
+.sh-form-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.sh-form-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sh-form-grid-code {
+    grid-template-columns: minmax(190px, 260px) minmax(0, 1fr);
+}
+
+.sh-form-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sh-form-grid .sh-upload-field {
+    margin-bottom: 0;
+}
+
+.sh-unit {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--sh-text-secondary);
+    margin-top: 3px;
+}
+
+.sh-field-narrow {
+    max-width: 260px;
+}
+
+/* Program checkboxes + per-program placement rows — flat on the section
+   background (no nested boxes), hairline dividers only. */
+.sh-program-checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.sh-program-checks .form-check {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 9px 10px;
+    background: transparent;
+    border: 0;
+    border-radius: var(--sh-field-radius);
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.sh-program-checks .form-check:hover {
+    background-color: var(--sh-field-tint);
+}
+
+.sh-program-checks .form-check:has(.form-check-input:checked) {
+    background-color: var(--sh-field-tint-deep);
+}
+
+/* Bootstrap pulls the box left by -1.5em; the row has no matching padding
+   here, so cancel it or the checkbox pokes through the container edge. */
+.sh-program-checks .form-check-input {
+    float: none;
+    margin-left: 0;
+    margin-top: 0;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.sh-program-checks .form-check-input:checked {
+    background-color: var(--sh-red);
+}
+
+.sh-program-checks .form-check-label {
+    font-size: var(--text-sm);
     font-weight: 600;
+    color: var(--sh-text-primary);
+    cursor: pointer;
+}
+
+.sh-placement-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-3) 0;
+    border: 0;
+    background: transparent;
+    margin-bottom: 0;
+    transition: background-color 150ms ease;
+}
+
+.sh-placement-row + .sh-placement-row {
+    border-top: 1px solid var(--sh-border);
+    margin-top: var(--space-3);
+    padding-top: var(--space-4);
+}
+
+.sh-placement-name {
+    min-width: 64px;
+    padding-bottom: 10px;
+}
+
+.sh-placement-field {
+    flex: 1 1 170px;
+    min-width: 150px;
+}
+
+.sh-placement-field .form-label {
+    font-size: 12px;
+}
+
+.sh-placement-empty {
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    font-style: italic;
+}
+
+.sh-field-hint {
+    font-size: var(--text-xs);
+    color: var(--sh-text-secondary);
 }
 
 /* Drop zone */
 .sh-upload-zone {
-    border: 2px dashed var(--sh-border-dark);
-    border-radius: var(--radius-lg);
-    padding: var(--space-8) var(--space-6);
+    border: 1.5px dashed var(--sh-field-border);
+    background: var(--sh-field-bg);
+    border-radius: var(--sh-field-radius);
+    padding: var(--space-7, 28px) var(--space-5);
     text-align: center;
     cursor: pointer;
     transition: border-color 150ms ease, background-color 150ms ease;
@@ -740,12 +964,12 @@ a.sh-request-item:hover {
 
 .sh-upload-zone:hover {
     border-color: var(--sh-red);
-    background: var(--sh-red-pale);
+    background: var(--sh-field-tint);
 }
 
 .sh-upload-zone-dragover {
     border-color: var(--sh-red);
-    background: var(--sh-red-pale);
+    background: var(--sh-field-tint-deep);
 }
 
 .sh-upload-input {
@@ -858,13 +1082,32 @@ a.sh-request-item:hover {
     margin: var(--space-4) 0;
 }
 
-/* Actions */
+/* Actions — sticky bordered bar pinned to the card bottom */
 .sh-upload-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: var(--space-3);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--sh-border);
+    margin: var(--space-5) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+    padding: var(--space-4) var(--space-6);
+    background: var(--sh-panel);
+    border-top: 1.5px solid var(--sh-section-border);
+}
+
+/* Danger zone card — soft border, red tint, red badge */
+.sh-card-danger {
+    background: var(--sh-danger-bg);
+    border: 1.5px solid var(--sh-field-border);
+}
+
+.sh-danger-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
 }
 
 /* ============================================================
@@ -1085,6 +1328,25 @@ a.sh-request-item:hover {
         padding: var(--space-5) var(--space-4);
     }
 
+    .sh-upload-actions {
+        margin: var(--space-4) calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .sh-form-grid-2,
+    .sh-form-grid-code,
+    .sh-form-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .sh-form-section-body {
+        padding: var(--space-4);
+    }
+
+    .sh-program-checks {
+        grid-template-columns: 1fr;
+    }
+
     .sh-panel-detail-meta {
         grid-template-columns: 1fr;
     }
@@ -1151,41 +1413,101 @@ a.sh-request-item:hover {
     position: relative;
     display: inline-flex;
     align-items: center;
+    min-width: 130px;
 }
 
-.sh-filter-dropdown i {
-    position: absolute;
-    left: 12px;
-    color: var(--sh-text-muted);
-    font-size: var(--text-sm);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.sh-filter-dropdown .form-select {
-    padding-left: 32px;
-    padding-right: 32px;
-    border: 2px solid var(--sh-border);
-    border-radius: var(--radius-md);
-    background: var(--sh-panel);
+.sh-filter-dropdown .sh-filter-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    width: 100%;
+    min-width: 130px;
+    height: 38px;
+    padding: 0 12px 0 14px;
+    border: 1.5px solid var(--sh-field-border);
+    border-radius: var(--sh-field-radius);
+    background-color: var(--sh-panel);
     font-size: var(--text-sm);
     font-weight: 600;
     color: var(--sh-text-primary);
-    cursor: pointer;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-    appearance: auto;
-    height: 38px;
     font-family: var(--sh-font-family);
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
 }
 
-.sh-filter-dropdown .form-select:hover {
-    border-color: var(--sh-red-muted);
+.sh-filter-dropdown .sh-filter-trigger::after {
+    content: "";
+    flex: 0 0 auto;
+    width: 14px;
+    height: 12px;
+    line-height: 1;
+    background-color: var(--sh-text-secondary);
+    -webkit-mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e") center / 14px 12px no-repeat;
+    mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e") center / 14px 12px no-repeat;
+    pointer-events: none;
+    transition: transform 150ms ease;
 }
 
-.sh-filter-dropdown .form-select:focus {
+.sh-filter-dropdown .sh-filter-trigger[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+}
+
+.sh-filter-dropdown .sh-filter-trigger:hover {
+    background-color: var(--sh-field-tint);
+    border-color: var(--sh-red);
+}
+
+.sh-filter-dropdown:focus-within .sh-filter-trigger {
     border-color: var(--sh-red);
     box-shadow: 0 0 0 3px rgba(139, 21, 32, 0.12);
+}
+
+/* Opened menu — same width as its button, sitting directly underneath */
+.sh-filter-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background-color: var(--sh-panel);
+    border: 1px solid var(--sh-section-border);
+    border-radius: var(--sh-field-radius);
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.12);
+}
+
+.sh-filter-menu[hidden] {
+    display: none;
+}
+
+.sh-filter-option {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 10px;
+    border-radius: calc(var(--sh-field-radius) - 3px);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--sh-text-primary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sh-filter-option:hover,
+.sh-filter-option:focus {
+    background-color: var(--sh-field-tint);
+    color: var(--sh-red);
     outline: none;
+}
+
+.sh-filter-option[aria-selected="true"] {
+    color: var(--sh-red);
 }
 
 /* ============================================================
@@ -1676,17 +1998,47 @@ a.sh-request-item:hover {
 /* ============================================================
    Auth Pages (Login / Get Started)
    ============================================================ */
-.auth-form-panel .form-control {
-    border: 2px solid var(--sh-text-primary);
-    border-radius: var(--radius-md);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--text-sm);
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+.auth-card {
+    background: var(--sh-panel);
+    border: 1.5px solid var(--sh-section-border);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.auth-form-panel .form-control:focus {
+.auth-card .sh-form-section-head {
+    border: 0;
+    border-bottom: 1px solid var(--sh-section-border);
+    border-radius: 0;
+}
+
+.auth-card-body {
+    padding: var(--space-5);
+    background: var(--sh-panel);
+}
+
+.auth-card-body .sh-upload-field:last-of-type {
+    margin-bottom: var(--space-4);
+}
+
+.auth-form-panel .form-control,
+.auth-form-panel .form-select {
+    border: 1.5px solid var(--sh-field-border);
+    border-radius: var(--sh-field-radius);
+    padding: 10px 12px;
+    font-size: 14px;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-form-panel .form-control:hover:not(:focus),
+.auth-form-panel .form-select:hover:not(:focus) {
+    background-color: var(--sh-field-tint);
+}
+
+.auth-form-panel .form-control:focus,
+.auth-form-panel .form-select:focus {
+    background-color: var(--sh-field-bg);
     border-color: var(--sh-red);
-    box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.15);
+    box-shadow: 0 0 0 3px rgba(123, 16, 32, 0.18);
 }
 
 .get-started-info {

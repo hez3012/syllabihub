@@ -16,28 +16,39 @@
             @method('PUT')
             @include('courses._form')
 
-            <div class="sh-upload-field" style="margin-top:var(--space-5);padding-top:var(--space-5);border-top:1px solid var(--sh-border);">
-                <label class="form-label" style="font-weight:600;">Syllabus Files</label>
-
-                @if ($course->syllabi->isNotEmpty())
-                    <div style="margin-bottom:var(--space-3);">
-                        @foreach ($course->syllabi as $syllabus)
-                            <div class="sh-panel-syllabus-item" style="margin-bottom:var(--space-2);">
-                                <div class="sh-panel-syllabus-info">
-                                    <i class="bi bi-file-earmark-text" style="color:var(--sh-red);"></i>
-                                    <span class="sh-panel-syllabus-filename">{{ strtoupper($syllabus->file_type) }}: {{ $syllabus->original_filename ?? basename($syllabus->file_path) }}</span>
-                                    <span class="sh-panel-syllabus-year">{{ $syllabus->curriculum_year ?? 'N/A' }}</span>
-                                </div>
+            <fieldset class="sh-form-section">
+                <legend class="sh-form-section-head">
+                    <span class="sh-form-section-badge">5</span>
+                    <span class="sh-form-section-titles">
+                        <span class="sh-form-section-title">Syllabus File</span>
+                        <span class="sh-form-section-hint">Uploading a new file replaces the existing file of the same type.</span>
+                    </span>
+                </legend>
+                <div class="sh-form-section-body">
+                    @if ($course->syllabi->isNotEmpty())
+                        <div class="sh-upload-field">
+                            <label class="form-label">Currently on file</label>
+                            <div>
+                                @foreach ($course->syllabi as $syllabus)
+                                    <div class="sh-panel-syllabus-item" style="margin-bottom:var(--space-2);">
+                                        <div class="sh-panel-syllabus-info">
+                                            <i class="bi bi-file-earmark-text" style="color:var(--sh-red);"></i>
+                                            <span class="sh-panel-syllabus-filename">{{ strtoupper($syllabus->file_type) }}: {{ $syllabus->original_filename ?? basename($syllabus->file_path) }}</span>
+                                            <span class="sh-panel-syllabus-year">{{ $syllabus->curriculum_year ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="sh-upload-note" style="margin-top:0;">No syllabus has been uploaded yet.</p>
-                @endif
+                        </div>
+                    @else
+                        <div class="sh-upload-field">
+                            <p class="sh-field-hint" style="margin:0;">No syllabus has been uploaded yet.</p>
+                        </div>
+                    @endif
 
-                <p class="sh-upload-note" style="margin-top:0;">Uploading a new file below replaces the existing file of the same type.</p>
-                @include('courses._syllabus-file-fields')
-            </div>
+                    @include('courses._syllabus-file-fields')
+                </div>
+            </fieldset>
 
             <div class="sh-upload-actions">
                 <a href="{{ route('courses.index') }}" class="btn btn-pup-outline-dark">Cancel</a>
@@ -46,8 +57,11 @@
         </form>
     </div>
 
-    <div class="sh-upload-card" style="margin-top:var(--space-4);border-color:var(--sh-danger);">
-        <h3 style="color:var(--sh-danger);font-size:var(--text-base);font-weight:600;margin:0 0 var(--space-2);">Danger Zone</h3>
+    <div class="sh-upload-card sh-card-danger" style="margin-top:var(--space-4);">
+        <div class="sh-danger-head">
+            <span class="sh-form-section-badge sh-form-section-badge-danger">!</span>
+            <span class="sh-form-section-title" style="color:var(--sh-danger);">Danger Zone</span>
+        </div>
         <p class="sh-upload-note" style="margin-top:0;">Deleting a course removes it and its syllabi permanently. This cannot be undone.</p>
         <form method="POST" action="{{ route('courses.destroy', $course) }}" onsubmit="return confirm('Are you sure you want to delete this course?');" style="margin:0;">
             @csrf

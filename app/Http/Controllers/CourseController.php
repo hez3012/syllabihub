@@ -26,19 +26,24 @@ class CourseController extends Controller
             'semester' => ['nullable', 'in:1st,2nd,summer'],
         ]);
 
+        $programCode = $validated['program'] ?? null;
+        $yearLevel = $validated['year_level'] ?? null;
+        $semester = $validated['semester'] ?? null;
+
         $baseQuery = Course::query()
-            ->when($validated['program'] ?? null, fn ($q, $code) => $q->whereHas(
-                'program',
-                fn ($p) => $p->where('code', $code)
-            ))
-            ->when($validated['year_level'] ?? null, fn ($q, $year) => $q->where('year_level', $year))
-            ->when($validated['semester'] ?? null, fn ($q, $sem) => $q->where('semester', $sem));
+            ->when($programCode || $yearLevel || $semester, fn ($q) => $q->whereHas(
+                'programs',
+                fn ($p) => $p
+                    ->when($programCode, fn ($x) => $x->where('programs.code', $programCode))
+                    ->when($yearLevel, fn ($x) => $x->where('course_program.year_level', $yearLevel))
+                    ->when($semester, fn ($x) => $x->where('course_program.semester', $semester))
+            ));
 
         $withSyllabusCount = (clone $baseQuery)->whereHas('syllabi')->count();
 
         $courses = (clone $baseQuery)
-            ->with(['program', 'latestSyllabus'])
-            ->orderBy('year_level')
+            ->with(['programs', 'latestSyllabus'])
+            ->orderByRaw('(SELECT MIN(year_level) FROM course_program WHERE course_program.course_id = courses.id)')
             ->orderBy('course_code')
             ->paginate(20)
             ->withQueryString();
@@ -53,7 +58,7 @@ class CourseController extends Controller
     public function panel(Course $course)
     {
         $course->load([
-            'program',
+            'programs',
             'creator',
             'latestSyllabus',
             'syllabi' => fn ($q) => $q->latest(),
@@ -73,12 +78,15 @@ class CourseController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateCourse($request);
+        $placements = $validated['placements'];
+        unset($validated['placements']);
         $fileValidated = $this->validateFiles($request);
 
         try {
             $course = Course::create(array_merge($validated, [
                 'created_by' => $request->user()->id,
             ]));
+            $course->programs()->sync($placements);
         } catch (QueryException $e) {
             return back()
                 ->withErrors(['course_code' => 'That course code or title was just taken by another submission. Please check and try again.'])
@@ -94,14 +102,17 @@ class CourseController extends Controller
             );
         }
 
-        $this->recordTrail($request, 'created', $course, null, $course->toArray());
+        $this->recordTrail($request, 'created', $course, null, array_merge(
+            $course->toArray(),
+            ['programs' => $this->programSnapshot($course)]
+        ));
 
         return redirect()->route('courses.index')->with('status', 'Course created successfully.');
     }
 
     public function edit(Course $course): View
     {
-        $course->load(['syllabi' => fn ($q) => $q->latest()]);
+        $course->load(['programs', 'syllabi' => fn ($q) => $q->latest()]);
 
         return view('courses.edit', [
             'course' => $course,
@@ -113,12 +124,16 @@ class CourseController extends Controller
     public function update(Request $request, Course $course): RedirectResponse
     {
         $validated = $this->validateCourse($request, $course->id);
+        $placements = $validated['placements'];
+        unset($validated['placements']);
         $fileValidated = $this->validateFiles($request);
 
         $oldValues = $course->toArray();
+        $oldProgramSnapshot = $this->programSnapshot($course);
 
         try {
             $course->update($validated);
+            $course->programs()->sync($placements);
         } catch (QueryException $e) {
             return back()
                 ->withErrors(['course_code' => 'That course code or title was just taken by another submission. Please check and try again.'])
@@ -136,9 +151,29 @@ class CourseController extends Controller
 
         $newValues = $course->fresh()->toArray();
         $changed = $this->diffValues($oldValues, $newValues);
+
+        $newProgramSnapshot = $this->programSnapshot($course->fresh());
+        if ($oldProgramSnapshot !== $newProgramSnapshot) {
+            $changed['old'] = array_merge($changed['old'] ?? [], ['programs' => $oldProgramSnapshot]);
+            $changed['new'] = array_merge($changed['new'] ?? [], ['programs' => $newProgramSnapshot]);
+        }
+
         $this->recordTrail($request, 'updated', $course, $changed['old'] ?? null, $changed['new'] ?? null);
 
         return redirect()->route('courses.index')->with('status', 'Course updated successfully.');
+    }
+
+    private function programSnapshot(Course $course): array
+    {
+        return $course->programs()
+            ->get()
+            ->mapWithKeys(fn ($program) => [
+                $program->code => [
+                    'year_level' => $program->pivot->year_level,
+                    'semester' => $program->pivot->semester,
+                ],
+            ])
+            ->all();
     }
 
     public function destroy(Request $request, Course $course): RedirectResponse
@@ -188,8 +223,9 @@ class CourseController extends Controller
 
     private function validateCourse(Request $request, ?int $ignoreId = null): array
     {
-        return $request->validate([
-            'program_id' => ['required', 'exists:programs,id'],
+        $validated = $request->validate([
+            'program_ids' => ['required', 'array', 'min:1'],
+            'program_ids.*' => ['integer', 'distinct', Rule::exists('programs', 'id')],
             'course_code' => [
                 'required', 'string', 'max:20',
                 Rule::unique('courses', 'course_code')->whereNull('deleted_at')->ignore($ignoreId),
@@ -198,8 +234,8 @@ class CourseController extends Controller
                 'required', 'string', 'max:255',
                 Rule::unique('courses', 'title')->whereNull('deleted_at')->ignore($ignoreId),
             ],
-            'year_level' => ['required', 'integer', 'min:1', 'max:4'],
-            'semester' => ['required', 'in:1st,2nd,summer'],
+            'year_level' => ['required', 'array', 'min:1'],
+            'semester' => ['required', 'array', 'min:1'],
             'prerequisite' => ['nullable', 'string', 'max:255'],
             'corequisite' => ['nullable', 'string', 'max:255'],
             'lecture_hours' => ['nullable', 'numeric', 'min:0', 'max:999.9'],
@@ -207,6 +243,26 @@ class CourseController extends Controller
             'credited_units' => ['nullable', 'numeric', 'min:0', 'max:99.9'],
             'tuition_hours' => ['nullable', 'numeric', 'min:0', 'max:999.9'],
         ]);
+
+        $placementRules = [];
+        foreach ($validated['program_ids'] as $programId) {
+            $placementRules["year_level.{$programId}"] = ['required', 'integer', 'min:1', 'max:4'];
+            $placementRules["semester.{$programId}"] = ['required', 'in:1st,2nd,summer'];
+        }
+        $request->validate($placementRules);
+
+        $validated['placements'] = collect($validated['program_ids'])
+            ->mapWithKeys(fn ($programId) => [
+                (int) $programId => [
+                    'year_level' => (int) $validated['year_level'][(string) $programId],
+                    'semester' => $validated['semester'][(string) $programId],
+                ],
+            ])
+            ->all();
+
+        unset($validated['program_ids'], $validated['year_level'], $validated['semester']);
+
+        return $validated;
     }
 
     private function validateFiles(Request $request): array

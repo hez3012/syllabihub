@@ -136,7 +136,7 @@ class ChatbotRetrievalService
         if (preg_match('/walang prerequisite|walang prereq|no prerequisite/i', $message)) {
             $courses = Course::query()
                 ->where(fn (Builder $q) => $q->whereNull('prerequisite')->orWhere('prerequisite', ''))
-                ->with('program')
+                ->with('programs')
                 ->get();
 
             return [
@@ -178,7 +178,7 @@ class ChatbotRetrievalService
             $courses = Course::query()
                 ->whereNotNull('prerequisite')
                 ->where('prerequisite', '!=', '')
-                ->with('program')
+                ->with('programs')
                 ->get();
 
             return [
@@ -201,7 +201,7 @@ class ChatbotRetrievalService
         if (preg_match('/walang co-?requisite|walang co requisite|no co-?requisite/i', $message)) {
             $courses = Course::query()
                 ->where(fn (Builder $q) => $q->whereNull('corequisite')->orWhere('corequisite', ''))
-                ->with('program')
+                ->with('programs')
                 ->get();
 
             return [
@@ -217,7 +217,7 @@ class ChatbotRetrievalService
             $courses = Course::query()
                 ->whereNotNull('corequisite')
                 ->where('corequisite', '!=', '')
-                ->with('program')
+                ->with('programs')
                 ->get();
 
             return [
@@ -270,7 +270,7 @@ class ChatbotRetrievalService
                 ->where(fn (Builder $q) => $q
                     ->where('prerequisite', 'like', "%{$anchor->course_code}%")
                     ->orWhere('corequisite', 'like', "%{$anchor->course_code}%"))
-                ->with('program')
+                ->with('programs')
                 ->get();
 
             $courses = $courses->concat($dependents);
@@ -387,7 +387,7 @@ class ChatbotRetrievalService
         // list, never about one specific course.
         if (preg_match('/curriculum|school\s?year|academic\s?year|\bAY\b/i', $message)
             && ($curriculumYear = $this->extractCurriculumYear($message)) !== null) {
-            $courses = Course::with('program')
+            $courses = Course::with('programs')
                 ->whereHas('syllabi', fn (Builder $q) => $q->where('curriculum_year', $curriculumYear))
                 ->get();
 
@@ -447,9 +447,11 @@ class ChatbotRetrievalService
 
         if (preg_match('/pinaka-?complete|most complete/i', $message)) {
             $byYear = Course::query()
-                ->selectRaw('year_level, COUNT(*) as total')
+                ->join('course_program', 'course_program.course_id', '=', 'courses.id')
+                ->select('course_program.year_level')
+                ->selectRaw('COUNT(*) as total')
                 ->selectRaw('SUM(CASE WHEN EXISTS (SELECT 1 FROM syllabi WHERE syllabi.course_id = courses.id AND syllabi.deleted_at IS NULL) THEN 1 ELSE 0 END) as with_syllabus')
-                ->groupBy('year_level')
+                ->groupBy('course_program.year_level')
                 ->orderByDesc('with_syllabus')
                 ->get();
 
@@ -458,7 +460,7 @@ class ChatbotRetrievalService
             return ['courses' => [], 'notes' => $notes];
         }
 
-        $base = Course::query()->with('program');
+        $base = Course::query()->with('programs');
         $this->applyScope($base, $scope);
 
         if (preg_match('/wala pang|kulang|missing|doesn\'?t have|does ?n\'?t have|don\'?t have|without (a |an )?syllabus|no syllabus/i', $message)) {
@@ -541,9 +543,12 @@ class ChatbotRetrievalService
             ];
         }
 
-        $query = Course::query()->with('program');
+        $query = Course::query()->with('programs');
         $this->applyScope($query, $scope);
-        $courses = $query->orderBy('year_level')->orderBy('semester')->get();
+        $courses = $query
+            ->orderByRaw('(SELECT MIN(year_level) FROM course_program WHERE course_program.course_id = courses.id)')
+            ->orderByRaw('(SELECT MIN(semester) FROM course_program WHERE course_program.course_id = courses.id)')
+            ->get();
 
         $notes = [];
         if (preg_match('/ilan|how many/i', $message)) {
@@ -639,7 +644,7 @@ class ChatbotRetrievalService
         }
 
         $scope = $this->parseScope($message);
-        $query = Course::query()->with('program');
+        $query = Course::query()->with('programs');
         $this->applyScope($query, $scope);
         $courses = $query->get();
 
@@ -665,9 +670,16 @@ class ChatbotRetrievalService
         }
 
         if (preg_match('/pinakamabigat|heaviest/i', $message)) {
-            $bySemesterUnits = $courses->groupBy(fn (Course $c) => "Year {$c->year_level} {$c->semester} sem")
-                ->map(fn (Collection $group) => (float) $group->sum('credited_units'))
-                ->sortDesc();
+            $bySemesterUnits = collect();
+
+            foreach ($courses as $course) {
+                foreach ($course->programs as $program) {
+                    $label = "Year {$program->pivot->year_level} {$program->pivot->semester} sem";
+                    $bySemesterUnits[$label] = ($bySemesterUnits[$label] ?? 0) + (float) $course->credited_units;
+                }
+            }
+
+            $bySemesterUnits = $bySemesterUnits->sortDesc();
 
             if ($bySemesterUnits->isNotEmpty()) {
                 $notes[] = 'Total credited units per year/semester (heaviest first): '
@@ -699,7 +711,7 @@ class ChatbotRetrievalService
             $courses = $program->courses;
             $notes[] = "{$program->code} ({$program->name}): {$courses->count()} courses, "
                 . $courses->sum('credited_units') . ' total credited units, '
-                . $courses->pluck('year_level')->filter()->unique()->count() . ' year levels represented.';
+                . $courses->map(fn (Course $c) => $c->pivot->year_level)->filter()->unique()->count() . ' year levels represented.';
         }
 
         // Title-based set difference — course codes differ by program
@@ -738,7 +750,7 @@ class ChatbotRetrievalService
     private function retrieveCourseCategory(string $message): array
     {
         $lower = mb_strtolower($message);
-        $query = Course::query()->with('program');
+        $query = Course::query()->with('programs');
         $matchedPrefix = null;
 
         if (str_contains($lower, 'geed')) {
@@ -906,7 +918,7 @@ class ChatbotRetrievalService
                 continue;
             }
 
-            $course = Course::with('program')->where('title', $canonicalTitle)->first();
+            $course = Course::with('programs')->where('title', $canonicalTitle)->first();
 
             if ($course) {
                 return $this->formatCourseModel($course, 'alias');
@@ -968,7 +980,7 @@ class ChatbotRetrievalService
             return collect();
         }
 
-        return Course::whereIn('id', $ids)->with('program')->get()
+        return Course::whereIn('id', $ids)->with('programs')->get()
             ->sortBy(fn (Course $c) => $ids->search($c->id))
             ->values();
     }
@@ -1172,16 +1184,20 @@ class ChatbotRetrievalService
 
     private function applyScope(Builder $query, array $scope): void
     {
-        if ($scope['program']) {
-            $query->whereHas('program', fn (Builder $q) => $q->where('code', $scope['program']));
-        }
+        if ($scope['program'] || $scope['year'] || $scope['semester']) {
+            $query->whereHas('programs', function (Builder $q) use ($scope) {
+                if ($scope['program']) {
+                    $q->where('programs.code', $scope['program']);
+                }
 
-        if ($scope['year']) {
-            $query->where('year_level', $scope['year']);
-        }
+                if ($scope['year']) {
+                    $q->where('course_program.year_level', $scope['year']);
+                }
 
-        if ($scope['semester']) {
-            $query->where('semester', $scope['semester']);
+                if ($scope['semester']) {
+                    $q->where('course_program.semester', $scope['semester']);
+                }
+            });
         }
     }
 
@@ -1191,9 +1207,9 @@ class ChatbotRetrievalService
             'course_id' => $course->id,
             'course_code' => $course->course_code,
             'title' => $course->title,
-            'program' => $course->program?->code,
-            'year_level' => $course->year_level,
-            'semester' => $course->semester,
+            'program' => $course->programLabel() ?: null,
+            'year_level' => $course->yearLevelValue(),
+            'semester' => $course->semesterValue(),
             'prerequisite' => $course->prerequisite,
             'corequisite' => $course->corequisite,
             'lecture_hours' => $course->lecture_hours,

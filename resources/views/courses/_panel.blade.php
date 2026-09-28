@@ -10,13 +10,11 @@
     <div class="sh-meta-row">
         <span class="sh-meta-label">Program</span>
         <span class="sh-meta-value">
-            @if ($course->program?->code === 'BSIT')
-                <span class="program-pill program-pill-bsit">BSIT</span>
-            @elseif ($course->program?->code === 'DIT')
-                <span class="program-pill program-pill-dit">DIT</span>
-            @else
-                {{ $course->program?->code }}
-            @endif
+            @forelse ($course->programs as $program)
+                <span class="program-pill {{ $program->code === 'DIT' ? 'program-pill-dit' : 'program-pill-bsit' }}">{{ $program->code }}</span>
+            @empty
+                —
+            @endforelse
         </span>
     </div>
     <div class="sh-meta-row">

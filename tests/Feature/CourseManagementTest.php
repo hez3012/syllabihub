@@ -21,11 +21,11 @@ class CourseManagementTest extends TestCase
         $program = Program::factory()->create();
 
         return array_merge([
-            'program_id' => $program->id,
+            'program_ids' => [$program->id],
             'course_code' => 'TST 500',
             'title' => 'Newly Added Fixture Course',
-            'year_level' => 2,
-            'semester' => '1st',
+            'year_level' => [$program->id => 2],
+            'semester' => [$program->id => '1st'],
         ], $overrides);
     }
 
@@ -76,7 +76,9 @@ class CourseManagementTest extends TestCase
         Course::factory()->create(['program_id' => $program->id, 'course_code' => 'TST 503']);
 
         $response = $this->actingAs($admin)->post('/courses', $this->coursePayload([
-            'program_id' => $program->id,
+            'program_ids' => [$program->id],
+            'year_level' => [$program->id => 2],
+            'semester' => [$program->id => '1st'],
             'course_code' => 'TST 503',
         ]));
 
@@ -91,7 +93,9 @@ class CourseManagementTest extends TestCase
         Course::factory()->create(['program_id' => $programA->id, 'course_code' => 'TST 504']);
 
         $response = $this->actingAs($admin)->post('/courses', $this->coursePayload([
-            'program_id' => $programB->id,
+            'program_ids' => [$programB->id],
+            'year_level' => [$programB->id => 2],
+            'semester' => [$programB->id => '1st'],
             'course_code' => 'TST 504',
         ]));
 
@@ -162,7 +166,9 @@ class CourseManagementTest extends TestCase
         $original = Syllabus::factory()->create(['course_id' => $course->id, 'file_type' => 'pdf']);
 
         $response = $this->actingAs($admin)->put("/courses/{$course->id}", array_merge($this->coursePayload([
-            'program_id' => $course->program_id,
+            'program_ids' => $course->programs->pluck('id')->all(),
+            'year_level' => $course->programs->mapWithKeys(fn ($p) => [$p->id => $p->pivot->year_level])->all(),
+            'semester' => $course->programs->mapWithKeys(fn ($p) => [$p->id => $p->pivot->semester])->all(),
             'course_code' => $course->course_code,
             'title' => $course->title,
         ]), [
@@ -182,7 +188,9 @@ class CourseManagementTest extends TestCase
         $course = Course::factory()->create(['created_by' => $faculty->id, 'title' => 'Original Title']);
 
         $response = $this->actingAs($admin)->put("/courses/{$course->id}", $this->coursePayload([
-            'program_id' => $course->program_id,
+            'program_ids' => $course->programs->pluck('id')->all(),
+            'year_level' => $course->programs->mapWithKeys(fn ($p) => [$p->id => $p->pivot->year_level])->all(),
+            'semester' => $course->programs->mapWithKeys(fn ($p) => [$p->id => $p->pivot->semester])->all(),
             'course_code' => $course->course_code,
             'title' => 'Admin-Edited Title',
         ]));

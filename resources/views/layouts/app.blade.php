@@ -96,9 +96,14 @@
         {{-- Content area --}}
         <div class="sh-content">
             {{-- Page header --}}
-            <div class="sh-page-header">
+            <div class="sh-page-header @yield('header-class')">
                 <div class="sh-page-header-left">
-                    <h1 class="sh-page-title">@yield('title', 'SyllabiHub')</h1>
+                    <div class="sh-page-header-heading">
+                        <h1 class="sh-page-title">@yield('title', 'SyllabiHub')</h1>
+                        @hasSection('header-subtitle')
+                            <p class="sh-page-header-subtitle">@yield('header-subtitle')</p>
+                        @endif
+                    </div>
                 </div>
                 <div class="sh-page-header-right">
                     @yield('header-actions')

@@ -1,13 +1,10 @@
 [phases.setup]
-nixPkgs = ["php84", "php84Packages.composer", "nodejs_20"]
+nixPkgs = ["php84", "php84Packages.composer", "nodejs_22"]
 
 [phases.install]
 cmds = [
   "composer install --no-dev --optimize-autoloader",
-  "rm -rf node_modules package-lock.json",
-  "npm install -g npm@10.9.2",
-  "npm cache clean --force",
-  "npm_config_platform=linux npm_config_arch=x64 npm_config_libc=glibc npm install --no-audit --no-fund",
+  "npm install --no-audit --no-fund",
 ]
 
 [phases.build]

@@ -5,6 +5,8 @@ nixPkgs = ["php84", "php84Packages.composer", "nodejs_20"]
 cmds = [
   "composer install --no-dev --optimize-autoloader",
   "rm -rf node_modules package-lock.json",
+  "npm install -g npm@latest",
+  "npm cache clean --force",
   "npm install --no-audit --no-fund",
 ]
 

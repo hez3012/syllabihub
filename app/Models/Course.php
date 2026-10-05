@@ -113,6 +113,18 @@ class Course extends Model
             ->join(' · ');
     }
 
+    public function pivotYearSemLabel($program): string
+    {
+        $year = $this->pivotYearLabel($program->pivot->year_level);
+        $semester = $program->pivot->semester ? ucfirst((string) $program->pivot->semester) : null;
+
+        if ($year === '—' && ! $semester) {
+            return '—';
+        }
+
+        return $semester ? "{$year} · {$semester}" : $year;
+    }
+
     private function pivotYearLabel($yearLevel): string
     {
         if ($yearLevel === null || $yearLevel === '') {

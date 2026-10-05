@@ -75,28 +75,35 @@
     {{-- Courses table --}}
     <div class="courses-table-wrap sh-table-colorful">
         <table class="table courses-table align-middle mb-0" id="sh-subjects-table">
-            <thead>
-                <tr>
-                    <th style="width:120px;">Code</th>
-                    <th>Title</th>
-                    <th style="width:110px;">Program</th>
-                    <th style="width:80px;">Units</th>
-                    <th style="width:150px;">Year Level</th>
-                    <th style="width:150px;">Semester</th>
-                    <th style="width:90px;">Syllabus</th>
-                    <th style="width:60px;"></th>
-                </tr>
-            </thead>
+    <thead>
+        <tr>
+            <th style="width:120px;">Code</th>
+            <th>Title</th>
+            <th style="width:80px;">Units</th>
+            <th style="width:260px;">Program</th>
+            <th style="width:90px;">Syllabus</th>
+            <th style="width:60px;"></th>
+        </tr>
+    </thead>
             <tbody>
                 @forelse ($courses as $course)
                     <tr class="sh-clickable-row" data-course-id="{{ $course->id }}">
                         <td><span class="course-code-tag {{ str_starts_with($course->course_code, 'DIT') ? 'course-code-tag-dit' : '' }}">{{ $course->course_code }}</span></td>
                         <td><span class="sh-table-link">{{ $course->title }}</span></td>
-                        <td class="text-muted">{{ $course->programLabel() ?: '—' }}</td>
                         <td class="text-muted">{{ $course->credited_units ?? '—' }}</td>
-                        <td class="text-muted">{{ $course->yearLevelLabel() }}</td>
-                        <td class="text-muted">{{ $course->semesterLabel() }}</td>
                         <td>
+                            <div class="sh-program-chips">
+                                @forelse ($course->programs as $program)
+                                    <span class="sh-program-chip {{ strtolower($program->code) === 'dit' ? 'sh-program-chip-dit' : 'sh-program-chip-bsit' }}">
+                                        <span class="sh-program-chip-code">{{ $program->code }}</span>
+                                        <span class="sh-program-chip-meta">{{ $course->pivotYearSemLabel($program) }}</span>
+                                    </span>
+                                @empty
+                                    <span class="text-muted">—</span>
+                                @endforelse
+                            </div>
+                        </td>
+    <td>
                             @if ($course->latestSyllabus)
                                 <span class="sh-badge sh-badge-success"><span class="sh-status-dot sh-status-dot-green"></span> Yes</span>
                             @else

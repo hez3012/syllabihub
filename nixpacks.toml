@@ -1,8 +1,8 @@
 [phases.setup]
 nixPkgs = [
   "nodejs_22",
-  "(php84.withExtensions (pe: pe.enabled ++ [ pe.all.pdo_mysql pe.all.mysqli pe.all.openssl pe.all.mbstring pe.all.zip pe.all.gd pe.all.fileinfo pe.all.bcmath pe.all.pdo_sqlite pe.all.sodium pe.all.intl ]))",
-  "php84Packages.composer",
+  "(php85.withExtensions (pe: pe.enabled ++ [ pe.all.pdo_mysql pe.all.mysqli pe.all.openssl pe.all.mbstring pe.all.zip pe.all.gd pe.all.fileinfo pe.all.bcmath pe.all.pdo_sqlite pe.all.sodium pe.all.intl ]))",
+  "php85Packages.composer",
 ]
 
 [phases.install]

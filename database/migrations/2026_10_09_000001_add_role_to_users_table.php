@@ -14,8 +14,8 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'faculty', 'intern'])
-                ->default('faculty')
+            $table->string('role', 20)
+                ->default('student')
                 ->after('password');
         });
     }

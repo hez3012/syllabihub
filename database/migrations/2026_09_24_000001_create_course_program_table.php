@@ -9,17 +9,28 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('course_program', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
-            $table->foreignId('program_id')->constrained('programs')->cascadeOnDelete();
-            $table->unsignedTinyInteger('year_level')->nullable();
-            $table->enum('semester', ['1st', '2nd', 'summer'])->nullable();
-            $table->timestamps();
+        // Idempotent: MySQL DDL is not transactional, so if an earlier run
+        // created this table and then failed, the retry must not re-create it.
+        if (! Schema::hasTable('course_program')) {
+            Schema::create('course_program', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('course_id')->constrained('courses')->cascadeOnDelete();
+                $table->foreignId('program_id')->constrained('programs')->cascadeOnDelete();
+                $table->unsignedTinyInteger('year_level')->nullable();
+                $table->enum('semester', ['1st', '2nd', 'summer'])->nullable();
+                $table->timestamps();
 
-            $table->unique(['course_id', 'program_id']);
-            $table->index('program_id');
-        });
+                $table->unique(['course_id', 'program_id']);
+                $table->index('program_id');
+            });
+        }
+
+        // Fresh databases (e.g. a new deploy) never had the legacy columns on
+        // courses, so there is nothing to backfill or drop. Only run this
+        // on databases that still have them.
+        if (! Schema::hasColumn('courses', 'program_id')) {
+            return;
+        }
 
         // Backfill one pivot row per existing course from its legacy columns.
         DB::table('courses')
@@ -45,7 +56,7 @@ return new class extends Migration
                 }
 
                 if ($rows) {
-                    DB::table('course_program')->insert($rows);
+                    DB::table('course_program')->insertOrIgnore($rows);
                 }
             });
 

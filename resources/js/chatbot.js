@@ -348,7 +348,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function messageWantsLinks(message) {
-        return /\b(link|links|download|pdf|docx|file|files|send|ipadala|padala|ibigay|bigay|kunin|buksan|open|share|attach)\b/i.test(message);
+        return /\b(link|links|download|pdf|docx|file|files|send|give|get|ipadala|padala|ibigay|bigay|kunin|buksan|open|share|attach)\b/i.test(message);
+    }
+
+    // Keep only the course(s) the user actually named. If they named none
+    // (a follow-up like "send me the pdf"), cap it at 3 so a loose search
+    // can never produce a wall of links.
+    function limitToMentionedCourses(sources, message) {
+        if (!sources || sources.length === 0) return [];
+
+        const compact = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+        const typed = compact(message);
+
+        const named = sources.filter((s) => typed.includes(compact(s.course_code)));
+
+        return named.length > 0 ? named : sources.slice(0, 3);
     }
 
     function restoreTranscript() {
@@ -400,13 +414,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 addMessageBubble('assistant', data.message || 'The assistant is temporarily unavailable. Please try again in a moment.');
             } else {
                 const row = addMessageBubble('assistant', data.answer);
+                const linkSources = wantsLinks ? limitToMentionedCourses(data.sources, message) : [];
 
                 if (wantsLinks) {
-                    addResultLinks(row, data.sources);
+                    addResultLinks(row, linkSources);
                 }
 
                 pushTranscript({ role: 'user', content: message });
-                pushTranscript({ role: 'assistant', content: data.answer, sources: data.sources, showLinks: wantsLinks });
+                pushTranscript({ role: 'assistant', content: data.answer, sources: linkSources, showLinks: wantsLinks });
             }
         } catch (error) {
             removeTypingIndicator();

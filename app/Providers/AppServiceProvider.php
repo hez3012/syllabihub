@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+    if ($this->app->environment('production') || request()->header('X-Forwarded-Proto') === 'https') {
+    \URL::forceScheme('https');
+    }
         // Project uses Bootstrap 5.3, not Tailwind — keep pagination()
         // links() output consistent instead of Laravel's Tailwind default.
         Paginator::useBootstrapFive();
@@ -46,4 +49,5 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('groq-per-minute', fn () => Limit::perMinute(25)->by('global'));
         RateLimiter::for('groq-per-day', fn () => Limit::perDay(14000)->by('global'));
     }
+    
 }

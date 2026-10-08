@@ -1,0 +1,46 @@
+Year Level,Semester,Subject Code,Prerequisite,Co-requisite,Description,Lecture Hours,Laboratory Hours,Credited Units,Tuition Hours
+First Year,First Semester,COMP 001,,,Introduction to Computing,2,3,3,5
+First Year,First Semester,COMP 002,,,Computer Programming 1,2,3,3,5
+First Year,First Semester,GEED 004,,,Mathematics in the Modern World/Matematika sa Makabagong Daigdig,3,0,3,3
+First Year,First Semester,GEED 005,,,Purposive Communication/Malayuning Komunikasyon,3,0,3,3
+First Year,First Semester,ITEC 101,,,Keyboarding and Documents Processing with Laboratory,2,3,3,5
+First Year,First Semester,ITEC 102,,,Basic Computer Hardware Servicing,2,3,3,5
+First Year,First Semester,NSTP 001,,,National Service Training Program 1,3,0,3,0
+First Year,First Semester,PATHFIT 1,,,Physical Activity Towards Health and Fitness 1,2,0,2,2
+First Year,Second Semester,COMP 003,COMP 002,,Computer Programming 2,2,3,3,5
+First Year,Second Semester,COMP 004,GEED 004,,Discrete Structures 1,3,0,3,3
+First Year,Second Semester,COMP 024,,,Technopreneurship,3,0,3,3
+First Year,Second Semester,GEED 001,,,Understanding the Self/Pag-unawa sa Sarili,3,0,3,3
+First Year,Second Semester,GEED 007,,,"Science, Technology and Society/Agham, Teknolohiya, at Lipunan",3,0,3,3
+First Year,Second Semester,ITEC 103,ITEC 102,,Hardware/Software Installation and Maintenance,2,3,3,5
+First Year,Second Semester,ITEC 104,,,Basic Electronics,0,6,2,6
+First Year,Second Semester,NSTP 002,,,National Service Training Program 2,3,0,3,0
+First Year,Second Semester,PATHFIT 2,PATHFIT 1,,Physical Activity Towards Health and Fitness 2,2,0,2,2
+Second Year,First Semester,COMP 006,,,Data Structures and Algorithms,2,3,3,5
+Second Year,First Semester,COMP 007,COMP 001,,Operating Systems,2,3,3,5
+Second Year,First Semester,COMP 008,,,Data Communications and Networking,2,3,3,5
+Second Year,First Semester,COMP 023,,,Social and Professional Issues in Computing,3,0,3,3
+Second Year,First Semester,INTE 201,COMP 003,,Programming 3 (Structured Programming),2,3,3,5
+Second Year,First Semester,INTE 202,,,Integrative Programming and Technologies 1,2,3,3,5
+Second Year,First Semester,PATHFIT 3,PATHFIT 2,,Physical Activity Towards Health and Fitness 3,2,0,2,2
+Second Year,Second Semester,COMP 009,COMP 003,,Object Oriented Programming,2,3,3,5
+Second Year,Second Semester,COMP 010,,,Information Management,2,3,3,5
+Second Year,Second Semester,COMP 012,COMP 008,,Network Administration,2,3,3,5
+Second Year,Second Semester,COMP 013,,,Human Computer Interaction,3,0,3,3
+Second Year,Second Semester,COMP 014,,,Quantitative Methods with Modeling and Simulation,3,0,3,3
+Second Year,Second Semester,COMP 016,INTE 202,,Web Development,2,3,3,5
+Second Year,Second Semester,COMP 030,,,Business Intelligence,3,2,3,5
+Second Year,Second Semester,INTE 403,,,Systems Administration and Maintenance,2,3,3,5
+Second Year,Second Semester,PATHFIT 4,PATHFIT 3,,Physical Activity Towards Health and Fitness 4,2,0,2,2
+Second Year,Summer Semester,ITEC 201,,,Practicum 1 (Junior Programmer 1 / Junior Programmer 2 - 300 hours),1,6,3,7
+Third Year,First Semester,COMP 015,,,Fundamentals of Research,3,0,3,3
+Third Year,First Semester,COMP 017,COMP 016,,Multimedia,2,3,3,5
+Third Year,First Semester,COMP 018,,,Database Administration,2,3,3,5
+Third Year,First Semester,COMP 019,,,Applications Development and Emerging Technologies,2,3,3,5
+Third Year,First Semester,COMP 025,,,Project Management,2,3,3,5
+Third Year,First Semester,COMP 027,,,Mobile Application Development (SMP PLUS),2,3,3,5
+Third Year,First Semester,INTE 351,COMP 20093,,Systems Analysis and Design,3,0,3,3
+Third Year,First Semester,ITEC 301,COMP 003,,Advance Programming,2,3,3,5
+Third Year,Second Semester,ITEC 302,,,Capstone,2,3,3,5
+Third Year,Second Semester,ITEC 303,,,Practicum 2 (Computer Programming Specialist - 300 hours),1,6,3,6
+Third Year,Second Semester,ITEC 304,,,Seminar on Issues and Trends in Information Technology,0,6,2,6

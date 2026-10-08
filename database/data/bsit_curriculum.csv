@@ -1,0 +1,57 @@
+Year Level,Semester,Subject Code,Prerequisite,Co-requisite,Description,Lecture Hours,Laboratory Hours,Credited Units,Tuition Hours
+First Year,First Semester,GEED 032,,,Filipinolohiya at Pambansang Kaunlaran,3,0,3,3
+First Year,First Semester,GEED 005,,,Purposive Communication/Malayuning Komunikasyon,3,0,3,3
+First Year,First Semester,GEED 004,,,Mathematics in the Modern World/Matematika sa Makabagong Daigdig,3,0,3,3
+First Year,First Semester,ACCO 014,,,Principles of Accounting,3,0,3,3
+First Year,First Semester,COMP 001,,,Introduction to Computing,2,3,3,5
+First Year,First Semester,COMP 002,,,Computer Programming 1,2,3,3,5
+First Year,First Semester,PATHFIT 1,,,Physical Activity Towards Health and Fitness 1,2,0,2,2
+First Year,First Semester,NSTP 001,,,National Service Training Program 1,3,0,3,0
+First Year,Second Semester,COMP 003,COMP 002,,Computer Programming 2,2,3,3,5
+First Year,Second Semester,COMP 004,GEED 004,,Discrete Structures 1,3,0,3,3
+First Year,Second Semester,GEED 002,,,Readings in Philippine History/Mga Babasahin Hinggil sa Kasaysayan ng Pilipinas,3,0,3,3
+First Year,Second Semester,GEED 010,,,People and the Earth's Ecosystems,3,0,3,3
+First Year,Second Semester,GEED 020,,,"Politics, Governance and Citizenship",3,0,3,3
+First Year,Second Semester,GEED 033,GEED 032,,Pagsasalin sa Kontekstong Filipino,3,0,3,3
+First Year,Second Semester,NSTP 002,,,National Service Training Program 2,3,0,3,0
+First Year,Second Semester,PATHFIT 2,PATHFIT 1,,Physical Activity Towards Health and Fitness 2,2,0,2,2
+Second Year,First Semester,COMP 006,COMP 003,,Data Structures and Algorithms,2,3,3,5
+Second Year,First Semester,COMP 007,COMP 001,,Operating Systems,2,3,3,5
+Second Year,First Semester,COMP 008,,,Data Communications and Networking,2,3,3,5
+Second Year,First Semester,ELEC IT-FE1,,,BSIT Free Elective 1,3,0,3,3
+Second Year,First Semester,GEED 001,,,Understanding the Self/Pag-unawa sa Sarili,3,0,3,3
+Second Year,First Semester,GEED 028,,,Reading Visual Arts,3,0,3,3
+Second Year,First Semester,INTE 201,COMP 003,,Programming 3 (Structured Programming),2,3,3,5
+Second Year,First Semester,PATHFIT 3,PATHFIT 2,,Physical Activity Towards Health and Fitness 3,2,0,2,2
+Second Year,Second Semester,COMP 009,COMP 003,,Object Oriented Programming,2,3,3,5
+Second Year,Second Semester,COMP 010,COMP 006,,Information Management,2,3,3,5
+Second Year,Second Semester,COMP 012,COMP 008,,Network Administration,2,3,3,5
+Second Year,Second Semester,COMP 013,COMP 002,,Human Computer Interaction,3,0,3,3
+Second Year,Second Semester,COMP 014,,,Quantitative Methods with Modeling and Simulation,3,0,3,3
+Second Year,Second Semester,ELEC IT-FE2,,,BSIT Free Elective 2,3,0,3,3
+Second Year,Second Semester,INTE 202,,,Integrative Programming and Technologies 1,2,3,3,5
+Second Year,Second Semester,PATHFIT 4,PATHFIT 3,,Physical Activity Towards Health and Fitness 4,2,0,2,2
+Third Year,First Semester,COMP 015,,,Fundamentals of Research,3,0,3,3
+Third Year,First Semester,COMP 016,COMP 009,,Web Development,2,3,3,5
+Third Year,First Semester,COMP 017,,,Multimedia,2,3,3,5
+Third Year,First Semester,COMP 018,,,Database Administration,2,3,3,5
+Third Year,First Semester,ELEC IT-E1,,,IT Elective 1,2,3,3,5
+Third Year,First Semester,GEED 006,,,Art Appreciation/Pagpapahalaga sa Sining,3,0,3,3
+Third Year,First Semester,INTE 301,INTE 202,,Systems Integration and Architecture 1,3,0,3,3
+Third Year,Second Semester,COMP 019,COMP 009,,Applications Development and Emerging Technologies,2,3,3,5
+Third Year,Second Semester,ELEC IT-E2,,,IT Elective 2,2,3,3,5
+Third Year,Second Semester,GEED 003,,,The Contemporary World/Ang Kasalukuyang Daigdig,3,0,3,3
+Third Year,Second Semester,GEED 008,,,Ethics/Etika,3,0,3,3
+Third Year,Second Semester,HRMA 001,,,Principles of Organization and Management,3,0,3,3
+Third Year,Second Semester,INTE 302,INTE 301,,Information Assurance and Security 1,2,3,3,5
+Third Year,Second Semester,INTE 303,COMP 015,,Capstone Project 1,2,3,3,5
+Third Year,Summer Semester,ELEC IT-E3,,,IT Elective 3,2,3,3,5
+Third Year,Summer Semester,GEED 037,,,Life and Works of Rizal/Buhay at Mga Gawa ni Rizal,3,0,3,3
+Fourth Year,First Semester,COMP 023,,,Social and Professional Issues in Computing,3,0,3,3
+Fourth Year,First Semester,ELEC IT-E4,,,IT Elective 4,2,3,3,5
+Fourth Year,First Semester,GEED 007,,,"Science, Technology and Society/Agham, Teknolohiya, at Lipunan",3,0,3,3
+Fourth Year,First Semester,INTE 401,INTE 302,,Information Assurance and Security 2,3,0,3,3
+Fourth Year,First Semester,INTE 402,INTE 303,,Capstone Project 2,3,0,3,3
+Fourth Year,First Semester,INTE 403,INTE 301,,Systems Administration and Maintenance,2,3,3,5
+Fourth Year,Second Semester,COMP 024,HRMA 001,,Technopreneurship,3,0,3,3
+Fourth Year,Second Semester,INTE 404,"INTE 303, INTE 302, COMP 019, COMP 008",,Practicum (500 Hours),6,0,6,6

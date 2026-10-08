@@ -13,7 +13,8 @@ RUN npm run build
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
+# ext-gd etc. are installed in the runtime stage, so skip the platform check here
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction --ignore-platform-reqs
 
 # ---------- Stage 3: runtime ----------
 FROM php:8.4-cli-bookworm
@@ -27,8 +28,9 @@ COPY . .
 COPY --from=assets /app/public/build ./public/build
 
 RUN composer dump-autoload --optimize --no-dev \
+ && composer check-platform-reqs \
  && php artisan package:discover --ansi \
- && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
+ && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
  && chmod -R ug+rwX storage bootstrap/cache
 
 EXPOSE 8080
